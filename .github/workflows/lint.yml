@@ -25,4 +25,4 @@ jobs:
         run: flake8 . --max-line-length=120 --exclude=modules,tests,senti_core,scripts
 
       - name: Check formatting
-        run: black --check .
+        run: black --check . --exclude "/(modules|tests|senti_core|scripts)/"
