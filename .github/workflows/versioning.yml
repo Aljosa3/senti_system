@@ -1,0 +1,21 @@
+name: Version Check
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  versioning:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check VERSION file
+        run: |
+          if [ ! -f VERSION ]; then
+            echo "VERSION file missing!" && exit 1
+          fi
+
+      - name: Print version
+        run: cat VERSION
