@@ -1,3 +1,4 @@
+cat > ~/senti_system/.gitignore << 'EOF'
 # ===================================
 # Senti System — Global .gitignore
 # ===================================
@@ -14,8 +15,9 @@ env/
 .taenv/
 .venv/
 
-# VS Code settings
+# Editors / IDE
 .vscode/
+.idea/
 
 # Logs
 *.log
@@ -27,6 +29,7 @@ runtime_logs/
 # Temporary AI output
 *.tmp
 *.temp
+tmp/
 
 # Model checkpoints / artifacts
 checkpoints/
@@ -35,9 +38,8 @@ model_cache/
 
 # Upload cache for future modules
 uploads/
-tmp/
 
-# Pip / build
+# Python packaging
 build/
 dist/
 *.egg-info/
@@ -51,3 +53,12 @@ cache/
 state/
 .senti/
 .run_cache/
+
+# Backups (ZIP)
+backups/
+__senti_backups__/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+EOF
