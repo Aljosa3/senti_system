@@ -1,0 +1,53 @@
+# ===================================
+# Senti System — Global .gitignore
+# ===================================
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.taenv/
+.venv/
+
+# VS Code settings
+.vscode/
+
+# Logs
+*.log
+logs/
+runtime_logs/
+*.stderr
+*.stdout
+
+# Temporary AI output
+*.tmp
+*.temp
+
+# Model checkpoints / artifacts
+checkpoints/
+models/
+model_cache/
+
+# Upload cache for future modules
+uploads/
+tmp/
+
+# Pip / build
+build/
+dist/
+*.egg-info/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Senti internal tooling caches
+cache/
+state/
+.senti/
+.run_cache/
