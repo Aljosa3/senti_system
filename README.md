@@ -39,3 +39,5 @@ Primarni cilj sistema je:
 - Modularni Senti agencijski protokol
 
 ## 📂 Struktura direktorijev
+
+This is a test change.

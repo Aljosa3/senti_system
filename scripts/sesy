@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# ==========================================
+# Senti Dev Commit Tool
+# Usage:
+#   sesy commit "Message"
+# ==========================================
+
+COMMAND=$1
+MESSAGE=$2
+
+if [ "$COMMAND" != "commit" ]; then
+    echo "❌ Unknown command. Usage:"
+    echo "   sesy commit \" commit message \""
+    exit 1
+fi
+
+# Check if in git repo
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "❌ This is not a Git repository."
+    exit 1
+fi
+
+# Get current branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Block committing directly to master
+if [ "$BRANCH" = "master" ]; then
+    echo "❌ Direct commits to master are not allowed!"
+    echo "👉 Create a feature branch first:"
+    echo "   git checkout -b feature/my-change"
+    exit 1
+fi
+
+# Stage everything
+echo "📌 Staging changes..."
+git add .
+
+# Commit
+echo "📝 Creating commit..."
+git commit -m "$MESSAGE"
+
+# Determine if branch has upstream
+UPSTREAM=$(git rev-parse --symbolic-full-name --abbrev-ref "$BRANCH"@{u} 2>/dev/null)
+
+if [ -z "$UPSTREAM" ]; then
+    echo "🚀 First push for this branch... setting upstream"
+    git push --set-upstream origin "$BRANCH"
+else
+    echo "🚀 Pushing changes..."
+    git push
+fi
+
+# Output pull request link
+REPO_URL=$(git config --get remote.origin.url | sed 's/git@github.com:/https:\/\/github.com\//;s/.git$//')
+
+echo ""
+echo "🎉 Done!"
+echo "👉 Create Pull Request:"
+echo "$REPO_URL/compare/$BRANCH?expand=1"
+echo ""
+echo "✔ All steps completed!"
