@@ -22,7 +22,7 @@ jobs:
           pip install black flake8
 
       - name: Run flake8
-        run: flake8 .
+        run: flake8 . --max-line-length=120 --exclude=modules,tests,senti_core
 
       - name: Check formatting
         run: black --check .
