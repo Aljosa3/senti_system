@@ -1,0 +1,14 @@
+{
+  "name": "senti_reasoning",
+  "type": "processing",
+  "version": "1.0.0",
+  "description": "Structured AI reasoning engine for multi-step analysis, planning, evaluation, and decision-making.",
+  "inputs": ["task", "context", "metadata"],
+  "outputs": ["analysis", "steps", "decision"],
+  "entrypoint": "senti_reasoning.py",
+  "requires": ["senti_validator"],
+  "permissions": {
+    "read": ["modules", "config", "senti_core"],
+    "write": []
+  }
+}

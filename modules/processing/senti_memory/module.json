@@ -1,0 +1,14 @@
+{
+  "name": "senti_memory",
+  "type": "processing",
+  "version": "1.0.0",
+  "description": "Long-term structured memory module with validation, categorization and priority scoring.",
+  "inputs": ["data", "category", "metadata"],
+  "outputs": ["memory_status", "stored_item", "warnings", "errors"],
+  "entrypoint": "senti_memory.py",
+  "requires": ["senti_validator"],
+  "permissions": {
+    "read": ["memory_store", "config"],
+    "write": ["memory_store"]
+  }
+}

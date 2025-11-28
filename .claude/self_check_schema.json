@@ -1,0 +1,213 @@
+{
+  "version": "1.0",
+  "name": "Senti AI Self-Check Schema",
+  "description": "Formal specification of the 24 self-check rules (SCP-24) required before AI generates any file.",
+  "rules": [
+    {
+      "id": "SCP-01",
+      "category": "structure",
+      "name": "AI must operate only within ~/senti_system/",
+      "severity": "critical",
+      "forbidden": ["outside_project_root", "relative_root_navigation"],
+      "allowed": ["project_root_only"]
+    },
+    {
+      "id": "SCP-02",
+      "category": "structure",
+      "name": "Project root structure must exist",
+      "severity": "critical",
+      "required_directories": [
+        "senti_os",
+        "senti_core",
+        "modules",
+        "config",
+        "docs",
+        "tests",
+        "scripts"
+      ],
+      "forbidden": ["missing_root_directories"]
+    },
+    {
+      "id": "SCP-03",
+      "category": "structure",
+      "name": "No new root-level directories may be created",
+      "severity": "high",
+      "forbidden": ["create_new_root_directory"]
+    },
+    {
+      "id": "SCP-04",
+      "category": "structure",
+      "name": "Immutable directories must not be modified",
+      "severity": "critical",
+      "immutable_directories": [
+        "senti_os/kernel",
+        "senti_os/system",
+        "senti_os/boot",
+        "senti_core/runtime",
+        "senti_core/api",
+        "senti_core/services",
+        "modules/_templates"
+      ],
+      "forbidden": ["modify_immutable_directories"]
+    },
+    {
+      "id": "SCP-05",
+      "category": "architecture",
+      "name": "Architecture direction must be preserved",
+      "severity": "critical",
+      "allowed_flow": "modules -> senti_core -> senti_os",
+      "forbidden": ["reverse_flow", "cross_layer_imports"]
+    },
+    {
+      "id": "SCP-06",
+      "category": "architecture",
+      "name": "No bypass of architectural layers",
+      "severity": "critical",
+      "forbidden": ["module_access_os_directly", "core_access_modules_directly"]
+    },
+    {
+      "id": "SCP-07",
+      "category": "imports",
+      "name": "All imports must be absolute",
+      "severity": "high",
+      "forbidden": ["relative_imports", "..", "../"],
+      "allowed": ["absolute_imports"]
+    },
+    {
+      "id": "SCP-08",
+      "category": "generation",
+      "name": "AI must list all files to be created or modified",
+      "severity": "high",
+      "forbidden": ["undisclosed_file_generation"]
+    },
+    {
+      "id": "SCP-09",
+      "category": "generation",
+      "name": "AI must output full file content (no patches)",
+      "severity": "critical",
+      "forbidden": ["partial_patches", "inline_edits"],
+      "required": ["full_file_output"]
+    },
+    {
+      "id": "SCP-10",
+      "category": "generation",
+      "name": "All file paths must be valid",
+      "severity": "medium",
+      "forbidden": ["invalid_paths", "nonexistent_paths"]
+    },
+    {
+      "id": "SCP-11",
+      "category": "generation",
+      "name": "No placeholder or mock content allowed",
+      "severity": "high",
+      "forbidden": ["mock_data", "placeholder_text", "lorem_ipsum"]
+    },
+    {
+      "id": "SCP-12",
+      "category": "security",
+      "name": "AI may not generate or modify .env files",
+      "severity": "critical",
+      "forbidden": [".env", "credentials"]
+    },
+    {
+      "id": "SCP-13",
+      "category": "security",
+      "name": "AI may not generate real API keys or passwords",
+      "severity": "critical",
+      "forbidden": ["api_key", "secret", "token", "password"]
+    },
+    {
+      "id": "SCP-14",
+      "category": "security",
+      "name": "AI may not read .env contents",
+      "severity": "critical",
+      "forbidden": ["read_env"]
+    },
+    {
+      "id": "SCP-15",
+      "category": "security",
+      "name": "AI may not access files outside the project",
+      "severity": "critical",
+      "forbidden": ["external_file_access"]
+    },
+    {
+      "id": "SCP-16",
+      "category": "security",
+      "name": "Core system logic must remain intact",
+      "severity": "high",
+      "forbidden": ["modify_critical_logic"]
+    },
+    {
+      "id": "SCP-17",
+      "category": "modules",
+      "name": "Each module must contain a module.json",
+      "severity": "high",
+      "required": ["module.json"]
+    },
+    {
+      "id": "SCP-18",
+      "category": "modules",
+      "name": "module.json must comply with schema.json",
+      "severity": "high",
+      "forbidden": ["invalid_metadata"]
+    },
+    {
+      "id": "SCP-19",
+      "category": "modules",
+      "name": "Module must inherit from the correct base class",
+      "severity": "high",
+      "forbidden": ["incorrect_base_class"]
+    },
+    {
+      "id": "SCP-20",
+      "category": "modules",
+      "name": "Modules may not directly access OS layer",
+      "severity": "critical",
+      "forbidden": ["module_os_direct_access"]
+    },
+    {
+      "id": "SCP-21",
+      "category": "tests",
+      "name": "Tests must not use mock data",
+      "severity": "medium",
+      "forbidden": ["mock_test_data"]
+    },
+    {
+      "id": "SCP-22",
+      "category": "tests",
+      "name": "Tests must be deterministic",
+      "severity": "medium",
+      "forbidden": ["non_deterministic_tests"]
+    },
+    {
+      "id": "SCP-23",
+      "category": "ruleset",
+      "name": "Must comply with PROJECT_RULES.md",
+      "severity": "critical",
+      "forbidden": ["project_rules_violation"]
+    },
+    {
+      "id": "SCP-24",
+      "category": "ruleset",
+      "name": "Must comply with SENTI_CORE_AI_RULES.md",
+      "severity": "critical",
+      "forbidden": ["core_ai_rules_violation"]
+    }
+  ],
+  "required_for_generation": [
+    "SCP-01",
+    "SCP-02",
+    "SCP-03",
+    "SCP-04",
+    "SCP-05",
+    "SSCP-06",
+    "SCP-07",
+    "SCP-09",
+    "SCP-12",
+    "SCP-13",
+    "SCP-14",
+    "SCP-20",
+    "SCP-23",
+    "SCP-24"
+  ]
+}
