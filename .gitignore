@@ -1,4 +1,9 @@
-cat > ~/senti_system/.gitignore << 'EOF'
+# Do NOT push backups to GitHub
+backups/
+**/backups/
+*.zip
+*.sha256
+
 # ===================================
 # Senti System — Global .gitignore
 # ===================================
