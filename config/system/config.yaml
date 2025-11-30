@@ -1,0 +1,25 @@
+# Senti System Configuration
+system:
+  name: "Senti System"
+  version: "1.0.0"
+  environment: "development"
+
+# OS Layer
+os:
+  boot_timeout: 30
+  service_timeout: 10
+
+# Core Layer
+core:
+  task_queue_size: 100
+  cognitive_loop_interval: 5.0
+
+# Security
+security:
+  integrity_checks: true
+  policy_enforcement: true
+
+# Modules
+modules:
+  auto_discover: true
+  load_on_boot: true

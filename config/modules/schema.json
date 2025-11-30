@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Senti Module Schema",
+  "description": "Schema for Senti System module definitions",
+  "type": "object",
+  "required": ["name", "version", "type"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Module name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["sensor", "actuator", "processing", "communication"],
+      "description": "Module type"
+    },
+    "description": {
+      "type": "string",
+      "description": "Module description"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of required module dependencies"
+    },
+    "config": {
+      "type": "object",
+      "description": "Module-specific configuration"
+    }
+  }
+}

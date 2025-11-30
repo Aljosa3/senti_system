@@ -1,0 +1,14 @@
+boot_test:
+  expected_services:
+    - kernel_loop
+    - system_diagnostics
+    - watchdog
+    - memory_cleanup
+    - security_manager
+    - autonomous_task_loop
+
+  expected_ai_layer:
+    - ai_agent
+    - command_processor
+    - recovery_planner
+    - task_engine
