@@ -65,6 +65,7 @@ def setup_ai_operational_layer(
     logger: Optional[logging.Logger] = None,
     integrity_engine: Optional[Any] = None,
     security_manager: Optional[Any] = None,
+    refactor_manager: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
     Inicializira in poveže AI Operational Layer z OS-om.
@@ -76,6 +77,7 @@ def setup_ai_operational_layer(
         logger — (neobvezno) AI OS logger
         integrity_engine — (neobvezno) DataIntegrityEngine (FAZA 7)
         security_manager — (neobvezno) SecurityManagerService (FAZA 8)
+        refactor_manager — (neobvezno) RefactorManager (FAZA 11)
 
     Vrne:
         dict s ključi:
@@ -83,6 +85,7 @@ def setup_ai_operational_layer(
             - "command_processor"
             - "recovery_planner"
             - "ai_agent"
+            - "refactor_manager"
     """
 
     log = logger or logging.getLogger("SentiAIOSBootstrap")
@@ -157,11 +160,18 @@ def setup_ai_operational_layer(
     log.info("Task Engine attached to Kernel.")
 
     # -------------------------------------------------------------------------
-    # 2.8 Return all AI-layer objects
+    # 2.8 FAZA 11 — Register Refactor Manager as AI service
+    # -------------------------------------------------------------------------
+    if refactor_manager:
+        log.info("FAZA 11 Refactor Manager registered in AI layer.")
+
+    # -------------------------------------------------------------------------
+    # 2.9 Return all AI-layer objects
     # -------------------------------------------------------------------------
     return {
         "task_engine": task_engine,
         "command_processor": command_processor,
         "recovery_planner": recovery_planner,
         "ai_agent": ai_agent,
+        "refactor_manager": refactor_manager,
     }

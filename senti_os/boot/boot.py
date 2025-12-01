@@ -60,6 +60,12 @@ from senti_os.security.security_manager_service import SecurityManagerService
 from senti_os.security.security_policy import SecurityPolicy
 from senti_os.security.data_integrity_engine import DataIntegrityEngine
 
+# ============================================================
+# FAZA 11 – Self-Refactor Engine
+# ============================================================
+
+from senti_core_module.senti_refactor import RefactorManager
+
 
 class SentiBoot:
     """
@@ -86,6 +92,9 @@ class SentiBoot:
             logger=self.logger,
             events=self.events
         )
+
+        # === FAZA 11 ===
+        self.refactor_manager = None  # Initialized after core
 
         self.logger.log("info", "SentiBoot initialized (Security + Integrity Layer enabled).")
 
@@ -139,6 +148,12 @@ class SentiBoot:
                 # Store the core's event_bus for use by AI layer
                 self.core_event_bus = core_result.get("event_bus")
                 self.logger.log("info", "Senti Core initialized.")
+
+                # === FAZA 11 ===
+                # Initialize Refactor Manager with event_bus
+                self.refactor_manager = RefactorManager(self.project_root, self.core_event_bus)
+                self.logger.log("info", "FAZA 11 Refactor Engine initialized.")
+
                 return True
             else:
                 self.logger.log("error", f"Core initialization failed: {core_result}")
@@ -197,6 +212,10 @@ class SentiBoot:
         # 6) Security Manager
         self.services.register_service("security_manager", self.security_manager)
 
+        # 7) Refactor Manager (FAZA 11)
+        if self.refactor_manager:
+            self.services.register_service("refactor_manager", self.refactor_manager)
+
         self.logger.log("info", "All OS services initialized.")
         return True
 
@@ -217,7 +236,8 @@ class SentiBoot:
             ai_core_client=None,
             logger=logging.getLogger("SentiAI"),
             integrity_engine=self.data_integrity,      # FAZA 7
-            security_manager=self.security_manager     # FAZA 8
+            security_manager=self.security_manager,    # FAZA 8
+            refactor_manager=self.refactor_manager     # FAZA 11
         )
 
         self.logger.log("info", "AI Operational Layer initialized.")
@@ -230,6 +250,9 @@ class SentiBoot:
     def initialize_autonomous_loop(self, ai_layer):
         """
         FAZA 6 – Autonomous Task Loop
+
+        Note: The autonomous loop has access to FAZA 11 Refactor Manager
+        through ai_layer["refactor_manager"] for self-healing capabilities.
         """
 
         self.logger.log("info", "Initializing Autonomous Task Loop Service (FAZA 6)...")
@@ -251,7 +274,7 @@ class SentiBoot:
         self.services.register_service("autonomous_task_loop", autonomous_service)
         self.services.start_service("autonomous_task_loop")
 
-        self.logger.log("info", "Autonomous Task Loop activated.")
+        self.logger.log("info", "Autonomous Task Loop activated (with FAZA 11 self-refactor access).")
         return autonomous_service
 
     # =====================================================
