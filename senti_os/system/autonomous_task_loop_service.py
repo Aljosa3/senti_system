@@ -16,6 +16,7 @@ class AutonomousTaskLoopService(BaseService):
     Integrates with FAZA 12 Memory Manager for periodic maintenance.
     Integrates with FAZA 13 Prediction Manager for predictive capabilities.
     Integrates with FAZA 14 Anomaly Manager for anomaly detection.
+    Integrates with FAZA 15 Strategy Manager for strategic planning and optimization.
     """
 
     def __init__(
@@ -26,7 +27,8 @@ class AutonomousTaskLoopService(BaseService):
         logger=None,
         memory_manager=None,
         prediction_manager=None,
-        anomaly_manager=None
+        anomaly_manager=None,
+        strategy_manager=None
     ):
         super().__init__("autonomous_task_loop")
         self._ai_agent = ai_os_agent
@@ -35,6 +37,7 @@ class AutonomousTaskLoopService(BaseService):
         self._memory_manager = memory_manager
         self._prediction_manager = prediction_manager
         self._anomaly_manager = anomaly_manager
+        self._strategy_manager = strategy_manager
 
         self._observer = AISystemObserver(sensors, logger=self._log)
         self._planner = AIMaintenancePlanner(logger=self._log)
@@ -83,6 +86,10 @@ class AutonomousTaskLoopService(BaseService):
                 # FAZA 14 — Anomaly Detection (every 6 iterations, ~30 seconds with 5s tick)
                 if self._anomaly_manager and self._loop_count % 6 == 0:
                     self._perform_anomaly_detection()
+
+                # FAZA 15 — Strategy Optimization (every 12 iterations, ~1 minute with 5s tick)
+                if self._strategy_manager and self._loop_count % 12 == 0:
+                    self._perform_strategy_optimization()
 
             except Exception as e:
                 self._log.exception("AutonomousTaskLoopService error: %s", e)
@@ -154,3 +161,52 @@ class AutonomousTaskLoopService(BaseService):
 
         except Exception as e:
             self._log.exception("Anomaly detection failed: %s", e)
+
+    def _perform_strategy_optimization(self):
+        """
+        Perform FAZA 15 strategy optimization operations.
+        Called periodically by autonomous loop.
+        """
+        try:
+            self._log.info("Performing FAZA 15 strategy optimization...")
+
+            # Get active strategies
+            active_strategies = self._strategy_manager.get_active_strategies()
+
+            if not active_strategies:
+                self._log.debug("No active strategies to optimize")
+                return
+
+            # Optimize high-risk strategies
+            optimized_count = 0
+            for plan_id, plan in active_strategies.items():
+                try:
+                    # Optimize strategies with risk > 60
+                    if plan.risk_score > 60:
+                        self._log.info(
+                            f"Optimizing high-risk strategy {plan_id}: {plan.objective} "
+                            f"(risk={plan.risk_score})"
+                        )
+
+                        optimized_plan = self._strategy_manager.optimize_strategy(
+                            plan_id,
+                            {"reduce_risk": True, "simplify": True}
+                        )
+
+                        self._log.info(
+                            f"Strategy {plan_id} optimized: risk reduced from "
+                            f"{plan.risk_score} to {optimized_plan.risk_score}"
+                        )
+
+                        optimized_count += 1
+
+                except Exception as e:
+                    self._log.error(f"Failed to optimize strategy {plan_id}: {e}")
+
+            if optimized_count > 0:
+                self._log.info(f"Strategy optimization completed: {optimized_count} strategies optimized")
+            else:
+                self._log.debug("No strategies required optimization")
+
+        except Exception as e:
+            self._log.exception("Strategy optimization failed: %s", e)

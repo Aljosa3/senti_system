@@ -84,6 +84,12 @@ from senti_core_module.senti_prediction import PredictionManager
 
 from senti_core_module.senti_anomaly import AnomalyManager
 
+# ============================================================
+# FAZA 15 – AI Strategy Engine
+# ============================================================
+
+from senti_core_module.senti_strategy import StrategyManager
+
 
 class SentiBoot:
     """
@@ -123,7 +129,10 @@ class SentiBoot:
         # === FAZA 14 ===
         self.anomaly_manager = None  # Initialized after prediction
 
-        self.logger.log("info", "SentiBoot initialized (Security + Integrity + Memory + Prediction + Anomaly Layer enabled).")
+        # === FAZA 15 ===
+        self.strategy_manager = None  # Initialized after anomaly
+
+        self.logger.log("info", "SentiBoot initialized (Security + Integrity + Memory + Prediction + Anomaly + Strategy Layer enabled).")
 
     # =====================================================
     # LOAD CONFIG
@@ -208,6 +217,17 @@ class SentiBoot:
                 )
                 self.logger.log("info", "FAZA 14 Anomaly Detection Engine initialized.")
 
+                # === FAZA 15 ===
+                # Initialize Strategy Manager with all FAZA managers
+                self.strategy_manager = StrategyManager(
+                    memory_manager=self.memory_manager,
+                    prediction_manager=self.prediction_manager,
+                    anomaly_manager=self.anomaly_manager,
+                    event_bus=self.core_event_bus,
+                    security_manager=self.security_manager
+                )
+                self.logger.log("info", "FAZA 15 AI Strategy Engine initialized.")
+
                 return True
             else:
                 self.logger.log("error", f"Core initialization failed: {core_result}")
@@ -282,6 +302,10 @@ class SentiBoot:
         if self.anomaly_manager:
             self.services.register_service("anomaly_manager", self.anomaly_manager)
 
+        # 11) Strategy Manager (FAZA 15)
+        if self.strategy_manager:
+            self.services.register_service("strategy_manager", self.strategy_manager)
+
         self.logger.log("info", "All OS services initialized.")
         return True
 
@@ -306,7 +330,8 @@ class SentiBoot:
             refactor_manager=self.refactor_manager,    # FAZA 11
             memory_manager=self.memory_manager,        # FAZA 12
             prediction_manager=self.prediction_manager,# FAZA 13
-            anomaly_manager=self.anomaly_manager       # FAZA 14
+            anomaly_manager=self.anomaly_manager,      # FAZA 14
+            strategy_manager=self.strategy_manager     # FAZA 15
         )
 
         self.logger.log("info", "AI Operational Layer initialized.")
@@ -321,9 +346,9 @@ class SentiBoot:
         FAZA 6 – Autonomous Task Loop
 
         Note: The autonomous loop has access to FAZA 11 Refactor Manager,
-        FAZA 12 Memory Manager, FAZA 13 Prediction Manager, and FAZA 14 Anomaly Manager
-        through ai_layer for self-healing, memory maintenance, predictive capabilities,
-        and anomaly detection.
+        FAZA 12 Memory Manager, FAZA 13 Prediction Manager, FAZA 14 Anomaly Manager,
+        and FAZA 15 Strategy Manager through ai_layer for self-healing, memory maintenance,
+        predictive capabilities, anomaly detection, and strategic planning.
         """
 
         self.logger.log("info", "Initializing Autonomous Task Loop Service (FAZA 6)...")
@@ -342,13 +367,14 @@ class SentiBoot:
             logger=self.logger,
             memory_manager=ai_layer.get("memory_manager"),        # FAZA 12
             prediction_manager=ai_layer.get("prediction_manager"),# FAZA 13
-            anomaly_manager=ai_layer.get("anomaly_manager")       # FAZA 14
+            anomaly_manager=ai_layer.get("anomaly_manager"),      # FAZA 14
+            strategy_manager=ai_layer.get("strategy_manager")     # FAZA 15
         )
 
         self.services.register_service("autonomous_task_loop", autonomous_service)
         self.services.start_service("autonomous_task_loop")
 
-        self.logger.log("info", "Autonomous Task Loop activated (with FAZA 11 + FAZA 12 access).")
+        self.logger.log("info", "Autonomous Task Loop activated (with FAZA 11-15 access).")
         return autonomous_service
 
     # =====================================================
