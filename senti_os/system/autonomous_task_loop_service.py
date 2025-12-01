@@ -15,6 +15,7 @@ class AutonomousTaskLoopService(BaseService):
     Teče kot stalna zanka.
     Integrates with FAZA 12 Memory Manager for periodic maintenance.
     Integrates with FAZA 13 Prediction Manager for predictive capabilities.
+    Integrates with FAZA 14 Anomaly Manager for anomaly detection.
     """
 
     def __init__(
@@ -24,7 +25,8 @@ class AutonomousTaskLoopService(BaseService):
         tick_interval: float = 5.0,
         logger=None,
         memory_manager=None,
-        prediction_manager=None
+        prediction_manager=None,
+        anomaly_manager=None
     ):
         super().__init__("autonomous_task_loop")
         self._ai_agent = ai_os_agent
@@ -32,6 +34,7 @@ class AutonomousTaskLoopService(BaseService):
         self._log = logger or logging.getLogger(__name__)
         self._memory_manager = memory_manager
         self._prediction_manager = prediction_manager
+        self._anomaly_manager = anomaly_manager
 
         self._observer = AISystemObserver(sensors, logger=self._log)
         self._planner = AIMaintenancePlanner(logger=self._log)
@@ -77,6 +80,10 @@ class AutonomousTaskLoopService(BaseService):
                 if self._prediction_manager and self._loop_count % 12 == 0:
                     self._perform_prediction()
 
+                # FAZA 14 — Anomaly Detection (every 6 iterations, ~30 seconds with 5s tick)
+                if self._anomaly_manager and self._loop_count % 6 == 0:
+                    self._perform_anomaly_detection()
+
             except Exception as e:
                 self._log.exception("AutonomousTaskLoopService error: %s", e)
 
@@ -120,3 +127,30 @@ class AutonomousTaskLoopService(BaseService):
 
         except Exception as e:
             self._log.exception("System prediction failed: %s", e)
+
+    def _perform_anomaly_detection(self):
+        """
+        Perform FAZA 14 anomaly detection operations.
+        Called periodically by autonomous loop.
+        """
+        try:
+            self._log.info("Performing FAZA 14 anomaly detection...")
+            results = self._anomaly_manager.analyze_system()
+
+            # Log anomalies
+            for component, anomaly in results.items():
+                if anomaly.severity in ["HIGH", "CRITICAL"]:
+                    self._log.warning(
+                        f"HIGH SEVERITY anomaly in {component}: {anomaly.reason} "
+                        f"(score={anomaly.score}, severity={anomaly.severity})"
+                    )
+                elif anomaly.score > 30:
+                    self._log.info(
+                        f"Anomaly detected in {component}: {anomaly.reason} "
+                        f"(score={anomaly.score}, severity={anomaly.severity})"
+                    )
+
+            self._log.info("Anomaly detection completed successfully")
+
+        except Exception as e:
+            self._log.exception("Anomaly detection failed: %s", e)

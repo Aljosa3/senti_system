@@ -78,6 +78,12 @@ from senti_core_module.senti_memory import MemoryManager
 
 from senti_core_module.senti_prediction import PredictionManager
 
+# ============================================================
+# FAZA 14 – Anomaly Detection Engine
+# ============================================================
+
+from senti_core_module.senti_anomaly import AnomalyManager
+
 
 class SentiBoot:
     """
@@ -114,7 +120,10 @@ class SentiBoot:
         # === FAZA 13 ===
         self.prediction_manager = None  # Initialized after memory
 
-        self.logger.log("info", "SentiBoot initialized (Security + Integrity + Memory + Prediction Layer enabled).")
+        # === FAZA 14 ===
+        self.anomaly_manager = None  # Initialized after prediction
+
+        self.logger.log("info", "SentiBoot initialized (Security + Integrity + Memory + Prediction + Anomaly Layer enabled).")
 
     # =====================================================
     # LOAD CONFIG
@@ -189,6 +198,16 @@ class SentiBoot:
                 )
                 self.logger.log("info", "FAZA 13 Prediction Engine initialized.")
 
+                # === FAZA 14 ===
+                # Initialize Anomaly Manager with memory, prediction, event_bus, and security
+                self.anomaly_manager = AnomalyManager(
+                    memory_manager=self.memory_manager,
+                    prediction_manager=self.prediction_manager,
+                    event_bus=self.core_event_bus,
+                    security_manager=self.security_manager
+                )
+                self.logger.log("info", "FAZA 14 Anomaly Detection Engine initialized.")
+
                 return True
             else:
                 self.logger.log("error", f"Core initialization failed: {core_result}")
@@ -259,6 +278,10 @@ class SentiBoot:
         if self.prediction_manager:
             self.services.register_service("prediction_manager", self.prediction_manager)
 
+        # 10) Anomaly Manager (FAZA 14)
+        if self.anomaly_manager:
+            self.services.register_service("anomaly_manager", self.anomaly_manager)
+
         self.logger.log("info", "All OS services initialized.")
         return True
 
@@ -282,7 +305,8 @@ class SentiBoot:
             security_manager=self.security_manager,    # FAZA 8
             refactor_manager=self.refactor_manager,    # FAZA 11
             memory_manager=self.memory_manager,        # FAZA 12
-            prediction_manager=self.prediction_manager # FAZA 13
+            prediction_manager=self.prediction_manager,# FAZA 13
+            anomaly_manager=self.anomaly_manager       # FAZA 14
         )
 
         self.logger.log("info", "AI Operational Layer initialized.")
@@ -297,8 +321,9 @@ class SentiBoot:
         FAZA 6 – Autonomous Task Loop
 
         Note: The autonomous loop has access to FAZA 11 Refactor Manager,
-        FAZA 12 Memory Manager, and FAZA 13 Prediction Manager through ai_layer
-        for self-healing, memory maintenance, and predictive capabilities.
+        FAZA 12 Memory Manager, FAZA 13 Prediction Manager, and FAZA 14 Anomaly Manager
+        through ai_layer for self-healing, memory maintenance, predictive capabilities,
+        and anomaly detection.
         """
 
         self.logger.log("info", "Initializing Autonomous Task Loop Service (FAZA 6)...")
@@ -316,7 +341,8 @@ class SentiBoot:
             tick_interval=5.0,
             logger=self.logger,
             memory_manager=ai_layer.get("memory_manager"),        # FAZA 12
-            prediction_manager=ai_layer.get("prediction_manager") # FAZA 13
+            prediction_manager=ai_layer.get("prediction_manager"),# FAZA 13
+            anomaly_manager=ai_layer.get("anomaly_manager")       # FAZA 14
         )
 
         self.services.register_service("autonomous_task_loop", autonomous_service)

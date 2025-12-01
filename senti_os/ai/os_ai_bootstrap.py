@@ -68,6 +68,7 @@ def setup_ai_operational_layer(
     refactor_manager: Optional[Any] = None,
     memory_manager: Optional[Any] = None,
     prediction_manager: Optional[Any] = None,
+    anomaly_manager: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
     Inicializira in poveže AI Operational Layer z OS-om.
@@ -82,6 +83,7 @@ def setup_ai_operational_layer(
         refactor_manager — (neobvezno) RefactorManager (FAZA 11)
         memory_manager — (neobvezno) MemoryManager (FAZA 12)
         prediction_manager — (neobvezno) PredictionManager (FAZA 13)
+        anomaly_manager — (neobvezno) AnomalyManager (FAZA 14)
 
     Vrne:
         dict s ključi:
@@ -92,6 +94,7 @@ def setup_ai_operational_layer(
             - "refactor_manager"
             - "memory_manager"
             - "prediction_manager"
+            - "anomaly_manager"
     """
 
     log = logger or logging.getLogger("SentiAIOSBootstrap")
@@ -184,7 +187,13 @@ def setup_ai_operational_layer(
         log.info("FAZA 13 Prediction Manager registered in AI layer.")
 
     # -------------------------------------------------------------------------
-    # 2.11 Return all AI-layer objects
+    # 2.11 FAZA 14 — Register Anomaly Manager as AI service
+    # -------------------------------------------------------------------------
+    if anomaly_manager:
+        log.info("FAZA 14 Anomaly Manager registered in AI layer.")
+
+    # -------------------------------------------------------------------------
+    # 2.12 Return all AI-layer objects
     # -------------------------------------------------------------------------
     return {
         "task_engine": task_engine,
@@ -194,4 +203,5 @@ def setup_ai_operational_layer(
         "refactor_manager": refactor_manager,
         "memory_manager": memory_manager,
         "prediction_manager": prediction_manager,
+        "anomaly_manager": anomaly_manager,
     }
