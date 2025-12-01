@@ -14,6 +14,7 @@ class AutonomousTaskLoopService(BaseService):
     FAZA 6 — glavni AI background service.
     Teče kot stalna zanka.
     Integrates with FAZA 12 Memory Manager for periodic maintenance.
+    Integrates with FAZA 13 Prediction Manager for predictive capabilities.
     """
 
     def __init__(
@@ -22,13 +23,15 @@ class AutonomousTaskLoopService(BaseService):
         sensors,
         tick_interval: float = 5.0,
         logger=None,
-        memory_manager=None
+        memory_manager=None,
+        prediction_manager=None
     ):
         super().__init__("autonomous_task_loop")
         self._ai_agent = ai_os_agent
         self._tick = tick_interval
         self._log = logger or logging.getLogger(__name__)
         self._memory_manager = memory_manager
+        self._prediction_manager = prediction_manager
 
         self._observer = AISystemObserver(sensors, logger=self._log)
         self._planner = AIMaintenancePlanner(logger=self._log)
@@ -70,6 +73,10 @@ class AutonomousTaskLoopService(BaseService):
                 if self._memory_manager and self._loop_count % 12 == 0:
                     self._perform_memory_maintenance()
 
+                # FAZA 13 — Prediction (every 12 iterations, ~1 minute with 5s tick)
+                if self._prediction_manager and self._loop_count % 12 == 0:
+                    self._perform_prediction()
+
             except Exception as e:
                 self._log.exception("AutonomousTaskLoopService error: %s", e)
 
@@ -91,3 +98,25 @@ class AutonomousTaskLoopService(BaseService):
 
         except Exception as e:
             self._log.exception("Memory maintenance failed: %s", e)
+
+    def _perform_prediction(self):
+        """
+        Perform FAZA 13 prediction operations.
+        Called periodically by autonomous loop.
+        """
+        try:
+            self._log.info("Performing FAZA 13 system prediction...")
+            results = self._prediction_manager.full_system_prediction()
+
+            # Log high-risk predictions
+            for category, result in results.items():
+                if result.risk_score > 70:
+                    self._log.warning(
+                        f"HIGH RISK prediction in {category}: {result.prediction} "
+                        f"(risk={result.risk_score}, confidence={result.confidence})"
+                    )
+
+            self._log.info("System prediction completed successfully")
+
+        except Exception as e:
+            self._log.exception("System prediction failed: %s", e)

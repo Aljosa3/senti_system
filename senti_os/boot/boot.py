@@ -72,6 +72,12 @@ from senti_core_module.senti_refactor import RefactorManager
 
 from senti_core_module.senti_memory import MemoryManager
 
+# ============================================================
+# FAZA 13 – Prediction Engine
+# ============================================================
+
+from senti_core_module.senti_prediction import PredictionManager
+
 
 class SentiBoot:
     """
@@ -105,7 +111,10 @@ class SentiBoot:
         # === FAZA 12 ===
         self.memory_manager = None  # Initialized after core
 
-        self.logger.log("info", "SentiBoot initialized (Security + Integrity + Memory Layer enabled).")
+        # === FAZA 13 ===
+        self.prediction_manager = None  # Initialized after memory
+
+        self.logger.log("info", "SentiBoot initialized (Security + Integrity + Memory + Prediction Layer enabled).")
 
     # =====================================================
     # LOAD CONFIG
@@ -171,6 +180,14 @@ class SentiBoot:
                     self.logger.log("info", "FAZA 12 Memory Engine initialized.")
                 else:
                     self.logger.log("error", f"FAZA 12 Memory Engine initialization failed: {memory_init_result}")
+
+                # === FAZA 13 ===
+                # Initialize Prediction Manager with memory_manager and event_bus
+                self.prediction_manager = PredictionManager(
+                    memory_manager=self.memory_manager,
+                    event_bus=self.core_event_bus
+                )
+                self.logger.log("info", "FAZA 13 Prediction Engine initialized.")
 
                 return True
             else:
@@ -238,6 +255,10 @@ class SentiBoot:
         if self.memory_manager:
             self.services.register_service("memory_manager", self.memory_manager)
 
+        # 9) Prediction Manager (FAZA 13)
+        if self.prediction_manager:
+            self.services.register_service("prediction_manager", self.prediction_manager)
+
         self.logger.log("info", "All OS services initialized.")
         return True
 
@@ -260,7 +281,8 @@ class SentiBoot:
             integrity_engine=self.data_integrity,      # FAZA 7
             security_manager=self.security_manager,    # FAZA 8
             refactor_manager=self.refactor_manager,    # FAZA 11
-            memory_manager=self.memory_manager         # FAZA 12
+            memory_manager=self.memory_manager,        # FAZA 12
+            prediction_manager=self.prediction_manager # FAZA 13
         )
 
         self.logger.log("info", "AI Operational Layer initialized.")
@@ -274,9 +296,9 @@ class SentiBoot:
         """
         FAZA 6 – Autonomous Task Loop
 
-        Note: The autonomous loop has access to FAZA 11 Refactor Manager
-        and FAZA 12 Memory Manager through ai_layer for self-healing and
-        memory maintenance capabilities.
+        Note: The autonomous loop has access to FAZA 11 Refactor Manager,
+        FAZA 12 Memory Manager, and FAZA 13 Prediction Manager through ai_layer
+        for self-healing, memory maintenance, and predictive capabilities.
         """
 
         self.logger.log("info", "Initializing Autonomous Task Loop Service (FAZA 6)...")
@@ -293,7 +315,8 @@ class SentiBoot:
             sensors=sensors,
             tick_interval=5.0,
             logger=self.logger,
-            memory_manager=ai_layer.get("memory_manager")  # FAZA 12
+            memory_manager=ai_layer.get("memory_manager"),        # FAZA 12
+            prediction_manager=ai_layer.get("prediction_manager") # FAZA 13
         )
 
         self.services.register_service("autonomous_task_loop", autonomous_service)
