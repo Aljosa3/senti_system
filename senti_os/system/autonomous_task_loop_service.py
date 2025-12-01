@@ -13,6 +13,7 @@ class AutonomousTaskLoopService(BaseService):
     """
     FAZA 6 — glavni AI background service.
     Teče kot stalna zanka.
+    Integrates with FAZA 12 Memory Manager for periodic maintenance.
     """
 
     def __init__(
@@ -20,18 +21,21 @@ class AutonomousTaskLoopService(BaseService):
         ai_os_agent,
         sensors,
         tick_interval: float = 5.0,
-        logger=None
+        logger=None,
+        memory_manager=None
     ):
         super().__init__("autonomous_task_loop")
         self._ai_agent = ai_os_agent
         self._tick = tick_interval
         self._log = logger or logging.getLogger(__name__)
+        self._memory_manager = memory_manager
 
         self._observer = AISystemObserver(sensors, logger=self._log)
         self._planner = AIMaintenancePlanner(logger=self._log)
 
         self._thread = None
         self._running = False
+        self._loop_count = 0  # Track iterations for memory maintenance
 
     # -------------------------------------------------------
     # Service lifecycle
@@ -61,7 +65,29 @@ class AutonomousTaskLoopService(BaseService):
                 for cmd in cmds:
                     self._ai_agent.process_command(cmd)
 
+                # FAZA 12 — Memory maintenance (every 12 iterations, ~1 minute with 5s tick)
+                self._loop_count += 1
+                if self._memory_manager and self._loop_count % 12 == 0:
+                    self._perform_memory_maintenance()
+
             except Exception as e:
                 self._log.exception("AutonomousTaskLoopService error: %s", e)
 
             time.sleep(self._tick)
+
+    def _perform_memory_maintenance(self):
+        """
+        Perform FAZA 12 memory maintenance tasks.
+        Called periodically by autonomous loop.
+        """
+        try:
+            self._log.info("Performing FAZA 12 memory maintenance...")
+            result = self._memory_manager.perform_maintenance()
+
+            if result.get("status") == "success":
+                self._log.info("Memory maintenance completed successfully")
+            else:
+                self._log.warning(f"Memory maintenance had issues: {result}")
+
+        except Exception as e:
+            self._log.exception("Memory maintenance failed: %s", e)
