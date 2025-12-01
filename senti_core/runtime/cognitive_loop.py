@@ -18,7 +18,7 @@ Ta modul:
 from pathlib import Path
 from datetime import datetime
 
-from senti_validator.senti_validator import SentiValidator
+from modules.senti_validator.senti_validator import SentiValidator
 from modules.processing.senti_reasoning.senti_reasoning import SentiReasoning
 from modules.processing.senti_memory.senti_memory import SentiMemory
 

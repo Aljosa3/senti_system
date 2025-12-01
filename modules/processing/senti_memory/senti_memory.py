@@ -17,7 +17,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from senti_validator import SentiValidator
+from modules.senti_validator.senti_validator import SentiValidator
 from senti_core.utils.validator import Validator
 
 
