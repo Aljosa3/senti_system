@@ -11,7 +11,7 @@ Naloga:
 
 import psutil
 from senti_os.drivers.driver_base import DriverBase
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 
 class HealthMonitorDriver(DriverBase):

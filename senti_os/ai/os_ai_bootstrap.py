@@ -28,7 +28,7 @@ NE vključuje AI modela (AICoreClient je opcijski).
 import logging
 from typing import Any, Optional, Dict
 
-from senti_core.task_orchestration import TaskOrchestrationEngine
+from senti_core_module.senti_core.task_orchestration import TaskOrchestrationEngine
 from senti_os.ai.ai_command_processor import AICommandProcessor
 from senti_os.ai.ai_recovery_planner import AIRecoveryPlanner
 from senti_os.ai.ai_os_agent import SentiAIOSAgent, SystemEvent

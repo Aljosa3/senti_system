@@ -13,7 +13,7 @@ from datetime import datetime
 
 from senti_os.system.system_events import SystemEvents
 from senti_os.kernel.core import SentiKernel
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 
 class KernelLoop:

@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 from modules.senti_validator.senti_validator import SentiValidator
-from senti_core.utils.validator import Validator
+from senti_core_module.senti_core.utils.validator import Validator
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]

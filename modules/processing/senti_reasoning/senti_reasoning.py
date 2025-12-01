@@ -9,7 +9,7 @@ A structured reasoning engine that:
 - produces controlled, safe, auditable reasoning outputs
 """
 
-from senti_core.utils.validator import Validator
+from senti_core_module.senti_core.utils.validator import Validator
 from modules.senti_validator.senti_validator import SentiValidator  # from module system
 import json
 

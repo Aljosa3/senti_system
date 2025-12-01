@@ -21,9 +21,9 @@ import os
 import inspect
 from pathlib import Path
 
-from senti_core.utils.validator import Validator
+from senti_core_module.senti_core.utils.validator import Validator
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 MODULES_DIR = PROJECT_ROOT / "modules"
 CONFIG_DIR = PROJECT_ROOT / "config"
 SYSTEM_CONFIG = CONFIG_DIR / "system" / "config.yaml"
@@ -31,7 +31,7 @@ MODULE_SCHEMA = CONFIG_DIR / "modules" / "schema.json"
 
 REQUIRED_ROOT_DIRS = [
     "senti_os",
-    "senti_core",
+    "senti_core_module",
     "modules",
     "config",
     "scripts",

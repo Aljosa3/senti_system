@@ -8,8 +8,8 @@ Naloga:
 - poenotiti dostop do senzorjev, aktuatorjev in IO sistemov
 """
 
-from senti_core.services.event_bus import EventBus
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.services.event_bus import EventBus
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 
 class DriverBase:

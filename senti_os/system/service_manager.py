@@ -10,8 +10,8 @@ Naloga:
 - (FAZA 7) globalni data-integrity hook
 """
 
-from senti_core.system.logger import SentiLogger
-from senti_core.services.event_bus import EventBus
+from senti_core_module.senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.services.event_bus import EventBus
 
 
 class ServiceManager:

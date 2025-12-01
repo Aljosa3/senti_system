@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Optional, Dict, Any
 
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.system.logger import SentiLogger
 from senti_os.security.security_events import SecurityEvents, SecurityEventType
 from senti_os.security.security_policy import SecurityPolicy
 from senti_os.security.data_integrity_engine import DataIntegrityViolation

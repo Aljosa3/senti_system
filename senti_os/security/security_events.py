@@ -17,8 +17,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-from senti_core.services.event_bus import EventBus
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.services.event_bus import EventBus
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 
 # -----------------------------------------------------------

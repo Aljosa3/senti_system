@@ -10,10 +10,10 @@ Namen:
 - pripravi Cognitive Controller
 """
 
-from senti_core.services.event_bus import EventBus
-from senti_core.runtime.task_routing_map import task_router
-from senti_core.runtime.cognitive_controller import CognitiveController
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.services.event_bus import EventBus
+from senti_core_module.senti_core.runtime.task_routing_map import task_router
+from senti_core_module.senti_core.runtime.cognitive_controller import CognitiveController
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 # FAZA 7 — Data Integrity
 from senti_os.security.data_integrity_engine import DataIntegrityEngine, DataIntegrityViolation

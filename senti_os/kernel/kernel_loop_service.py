@@ -10,7 +10,7 @@ Naloga:
 import threading
 from senti_os.kernel.kernel_loop import KernelLoop
 from senti_os.kernel.core import SentiKernel
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 
 class KernelLoopService:

@@ -20,7 +20,7 @@ forbidden operations, and required behaviours.
      ~/senti_system/
 
 1.2 The AI MUST follow the 3-layer architecture:
-     modules → senti_core → senti_os
+     modules → senti_core_module → senti_os
 
 1.3 The AI MUST NOT create new root folders.
 
@@ -28,9 +28,9 @@ forbidden operations, and required behaviours.
      - senti_os/kernel/
      - senti_os/system/
      - senti_os/boot/
-     - senti_core/runtime/
-     - senti_core/api/
-     - senti_core/services/
+     - senti_core_module/senti_core/runtime/
+     - senti_core_module/senti_core/api/
+     - senti_core_module/senti_core/services/
      - modules/_templates/
 
 1.5 All generated files MUST be real, complete, and production-ready.
@@ -87,7 +87,7 @@ Example (correct):
 
 javascript
 Kopiraj kodo
-from senti_core.services.event_bus import EventBus
+from senti_core_module.senti_core.services.event_bus import EventBus
 3.2 The following are forbidden:
 
 relative imports (“from ..something import X”)
@@ -125,7 +125,7 @@ Kopiraj kodo
 
 nginx
 Kopiraj kodo
-python3 -m senti_core
+python3 -m senti_core_module.senti_core
 5.3 CLI components MUST NOT access OS layer directly.
 
 SECTION 6 — BEHAVIOUR RULES FOR AI

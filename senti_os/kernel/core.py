@@ -10,8 +10,8 @@ Naloga Kernel-a:
 - služi kot centralna točka komunikacije med Senti OS in Senti Core Runtime
 """
 
-from senti_core.services.event_bus import EventBus
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.services.event_bus import EventBus
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 
 class SentiKernel:

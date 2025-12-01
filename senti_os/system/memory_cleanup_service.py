@@ -14,8 +14,8 @@ import os
 import time
 from pathlib import Path
 
-from senti_core.system.logger import SentiLogger
-from senti_core.services.event_bus import EventBus
+from senti_core_module.senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.services.event_bus import EventBus
 from senti_os.system.system_events import SystemEvents
 
 

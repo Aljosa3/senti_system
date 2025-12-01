@@ -12,8 +12,8 @@ Upravlja Cognitive Loop:
 from pathlib import Path
 from datetime import datetime
 
-from senti_core.runtime.cognitive_loop import CognitiveLoop
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.runtime.cognitive_loop import CognitiveLoop
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 
 class CognitiveController:

@@ -7,8 +7,8 @@ It checks logical consistency, rule compliance, metadata structure,
 forbidden patterns, and semantic integrity.
 """
 
-from senti_core.utils.validator import Validator
-from senti_core.runtime.integrity_checker import IntegrityChecker
+from senti_core_module.senti_core.utils.validator import Validator
+from senti_core_module.senti_core.runtime.integrity_checker import IntegrityChecker
 import json
 
 

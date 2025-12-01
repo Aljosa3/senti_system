@@ -22,9 +22,9 @@ import logging
 # Senti Core
 # ============================================================
 
-from senti_core.runtime.loader import CoreLoader
-from senti_core.runtime.integrity_checker import IntegrityChecker
-from senti_core.system.logger import SentiLogger
+from senti_core_module.senti_core.runtime.loader import CoreLoader
+from senti_core_module.senti_core.runtime.integrity_checker import IntegrityChecker
+from senti_core_module.senti_core.system.logger import SentiLogger
 
 # ============================================================
 # Senti OS – Kernel + Services
