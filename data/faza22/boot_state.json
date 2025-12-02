@@ -1,0 +1,12 @@
+{
+  "state": "running",
+  "enabled_stacks": {
+    "faza21": true,
+    "faza19": true,
+    "faza20": true,
+    "faza17": true,
+    "faza16": true,
+    "faza18": true
+  },
+  "storage_dir": "/home/pisarna/senti_system/data/faza21"
+}
