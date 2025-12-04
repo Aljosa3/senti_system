@@ -135,6 +135,12 @@ For more information, visit: https://github.com/senti-os
         help="Run only essential diagnostic checks"
     )
 
+    # NEW: FAZA 23 UI Dashboard
+    ui_parser = subparsers.add_parser(
+        "ui",
+        help="Start the FAZA 23 terminal dashboard"
+    )
+
     # Help command
     help_parser = subparsers.add_parser(
         "help",
@@ -354,6 +360,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             return handle_logs_command(args, cli_commands)
         elif args.command == "doctor":
             return handle_doctor_command(args, cli_commands)
+        elif args.command == "ui":
+            # Launch curses dashboard
+            import curses
+            from senti_os.core.faza23.tui_dashboard import SentiTUIDashboard
+            curses.wrapper(lambda stdscr: SentiTUIDashboard(stdscr).render())
+            return 0
         elif args.command == "help":
             return handle_help_command(args, cli_commands)
         else:
