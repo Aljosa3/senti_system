@@ -315,7 +315,7 @@ class CLICommands:
             ]
 
             if system_state == "running":
-                uptime = status["system"].get("uptime_seconds", 0)
+                uptime = status["system"].get("uptime_seconds") or 0
                 message_lines.append(f"Uptime: {uptime:.0f} seconds")
 
             message_lines.extend([
