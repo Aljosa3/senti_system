@@ -135,6 +135,18 @@ class BootManager:
         self.stacks: Dict[str, StackInfo] = {}
         self.boot_events: List[BootEvent] = []
 
+        # NEW: Try to load existing boot_state.json for CLI sync
+        state_file = "/home/pisarna/senti_system/data/faza22/boot_state.json"
+        try:
+            import json, os
+            if os.path.exists(state_file):
+                with open(state_file, "r") as f:
+                    raw = json.load(f)
+                    if "state" in raw:
+                        self.state = BootState(raw["state"])
+        except Exception:
+            pass
+
         # Initialize stack info
         for stack_name in self.BOOT_ORDER:
             self.stacks[stack_name] = StackInfo(name=stack_name)
@@ -502,6 +514,15 @@ class BootManager:
 
         self.state = BootState.RUNNING
         self.boot_completed_at = datetime.now()
+
+        # NEW: persist running state so CLI can read correct status
+        try:
+            state_file = "/home/pisarna/senti_system/data/faza22/boot_state.json"
+            os.makedirs(os.path.dirname(state_file), exist_ok=True)
+            with open(state_file, "w") as f:
+                json.dump({"state": "running"}, f)
+        except Exception:
+            pass
 
         boot_time = (self.boot_completed_at - self.boot_started_at).total_seconds()
 

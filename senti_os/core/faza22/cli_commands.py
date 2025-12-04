@@ -75,6 +75,18 @@ class CLICommands:
             manager = self.service_registry.get_boot_manager(
                 storage_dir=self.storage_dir
             )
+
+            # NEW: Load boot_state.json and override manager.state
+            import os, json
+            if os.path.exists(self.state_file):
+                try:
+                    with open(self.state_file, "r") as f:
+                        data = json.load(f)
+                        if "state" in data:
+                            manager.state = BootState(data["state"])
+                except:
+                    pass
+
             return manager
         except Exception as e:
             self.logs_manager.append_log(
@@ -91,10 +103,11 @@ class CLICommands:
             manager: BootManager instance to save.
         """
         try:
+            # NEW: Persist FAZA22 state for CLI
             state = {
                 "state": manager.state.value,
                 "enabled_stacks": manager.enabled_stacks,
-                "storage_dir": manager.storage_dir
+                "storage_dir": manager.storage_dir,
             }
             with open(self.state_file, 'w') as f:
                 json.dump(state, f, indent=2)

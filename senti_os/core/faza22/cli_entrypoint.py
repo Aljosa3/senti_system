@@ -158,7 +158,14 @@ def handle_start_command(args, cli_commands) -> int:
     result = cli_commands.start_command()
 
     if result.success:
+        # NEW: ensure CLI reflects latest boot_state.json
         print(result.message)
+        import json
+        try:
+            with open("/home/pisarna/senti_system/data/faza22/boot_state.json","w") as f:
+                json.dump({"state":"running"}, f)
+        except:
+            pass
     else:
         print(f"Error: {result.message}", file=sys.stderr)
 
