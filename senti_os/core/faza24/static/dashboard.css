@@ -1,0 +1,19 @@
+body {
+    background: #111;
+    color: #eee;
+    font-family: monospace;
+}
+#container {
+    width: 90%;
+    margin: auto;
+}
+h1, h2 {
+    color: #66ccff;
+}
+pre {
+    background: #222;
+    padding: 10px;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: scroll;
+}

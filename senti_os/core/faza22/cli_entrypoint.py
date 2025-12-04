@@ -14,6 +14,8 @@ Usage:
     senti logs --level=error - Show error logs
     senti doctor             - Run diagnostics
     senti doctor --quick     - Run quick diagnostics
+    senti ui                 - Start terminal dashboard (FAZA 23)
+    senti web                - Start web dashboard (FAZA 24)
     senti help               - Show help
 
 Author: SENTI OS Core Team
@@ -139,6 +141,12 @@ For more information, visit: https://github.com/senti-os
     ui_parser = subparsers.add_parser(
         "ui",
         help="Start the FAZA 23 terminal dashboard"
+    )
+
+    # Web UI command
+    web_parser = subparsers.add_parser(
+        "web",
+        help="Start Senti OS Web Dashboard"
     )
 
     # Help command
@@ -365,6 +373,11 @@ def main(argv: Optional[List[str]] = None) -> int:
             import curses
             from senti_os.core.faza23.tui_dashboard import SentiTUIDashboard
             curses.wrapper(lambda stdscr: SentiTUIDashboard(stdscr).render())
+            return 0
+        elif args.command == "web":
+            from senti_os.core.faza24.web_server import start_web
+            print("Starting Senti OS Web Dashboard on http://localhost:8123 ...")
+            start_web()
             return 0
         elif args.command == "help":
             return handle_help_command(args, cli_commands)
