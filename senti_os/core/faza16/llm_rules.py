@@ -16,7 +16,12 @@ import re
 import logging
 from typing import Dict, List, Optional, Set
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+
+from senti_os.core.faza16.spec_validator import create_spec_validator, SpecValidationResult
+from senti_os.core.faza16.code_safety_analyzer import create_analyzer, CodeSafetyReport
+from senti_os.core.faza16.architecture_diff import create_analyzer as create_arch_analyzer, ArchitectureAnalysis
 
 
 logging.basicConfig(level=logging.INFO)
@@ -104,8 +109,14 @@ class LLMRulesEngine:
             "source_verification",
             "consent_check",
             "data_protection",
+            "spec_validation",
+            "code_integrity",
+            "architecture_constraints",
         }
         self.custom_rules: List[callable] = []
+        self.spec_validator = create_spec_validator()
+        self.code_analyzer = create_analyzer()
+        self.arch_analyzer = create_arch_analyzer()
         logger.info("LLM Rules Engine initialized")
 
     def check_all_rules(
@@ -379,6 +390,149 @@ class LLMRulesEngine:
     def get_enabled_rules(self) -> Set[str]:
         """Get set of currently enabled rules."""
         return self.enabled_rules.copy()
+
+    def validate_spec(self, spec_text: str, spec_name: str = "unnamed") -> SpecValidationResult:
+        """
+        Validate a SPEC document.
+
+        Args:
+            spec_text: SPEC content
+            spec_name: SPEC identifier
+
+        Returns:
+            SpecValidationResult
+        """
+        return self.spec_validator.validate_spec(spec_text, spec_name)
+
+    def validate_code(
+        self,
+        code_text: str,
+        filename: str = "<string>",
+    ) -> CodeSafetyReport:
+        """
+        Validate Python code for safety and integrity.
+
+        Args:
+            code_text: Python source code
+            filename: Filename for error reporting
+
+        Returns:
+            CodeSafetyReport
+        """
+        return self.code_analyzer.analyze_code(code_text, filename)
+
+    def validate_architecture(
+        self,
+        module_spec: Dict,
+        module_path: str,
+    ) -> ArchitectureAnalysis:
+        """
+        Validate module against architecture constraints.
+
+        Args:
+            module_spec: Module specification
+            module_path: Proposed module path
+
+        Returns:
+            ArchitectureAnalysis
+        """
+        return self.arch_analyzer.analyze_new_module(module_spec, module_path)
+
+    def calculate_risk_score(
+        self,
+        spec_result: Optional[SpecValidationResult] = None,
+        code_result: Optional[CodeSafetyReport] = None,
+        arch_result: Optional[ArchitectureAnalysis] = None,
+    ) -> Dict:
+        """
+        Calculate overall risk score based on validation results.
+
+        Args:
+            spec_result: SPEC validation result
+            code_result: Code safety analysis result
+            arch_result: Architecture analysis result
+
+        Returns:
+            Dictionary with risk assessment
+        """
+        risk_score = 0.0  # 0 = no risk, 100 = maximum risk
+        risk_factors = []
+
+        # SPEC validation risk
+        if spec_result:
+            spec_risk = 100.0 - spec_result.score
+            risk_score += spec_risk * 0.3  # 30% weight
+            if spec_risk > 50:
+                risk_factors.append("High SPEC validation risk")
+
+        # Code safety risk
+        if code_result:
+            code_risk = 100.0 - code_result.safety_score
+            risk_score += code_risk * 0.4  # 40% weight
+            if code_risk > 50:
+                risk_factors.append("High code safety risk")
+
+        # Architecture compatibility risk
+        if arch_result:
+            arch_risk = 100.0 - arch_result.compatibility_score
+            risk_score += arch_risk * 0.3  # 30% weight
+            if arch_risk > 50:
+                risk_factors.append("High architecture risk")
+
+        # Normalize risk score
+        if spec_result or code_result or arch_result:
+            # Risk already weighted, just ensure bounds
+            risk_score = max(0.0, min(100.0, risk_score))
+        else:
+            risk_score = 50.0  # Unknown risk
+
+        # Determine risk level
+        if risk_score < 20:
+            risk_level = "LOW"
+        elif risk_score < 40:
+            risk_level = "MODERATE"
+        elif risk_score < 60:
+            risk_level = "HIGH"
+        else:
+            risk_level = "CRITICAL"
+
+        return {
+            "risk_score": round(risk_score, 2),
+            "risk_level": risk_level,
+            "risk_factors": risk_factors,
+            "spec_score": spec_result.score if spec_result else None,
+            "code_safety_score": code_result.safety_score if code_result else None,
+            "architecture_score": arch_result.compatibility_score if arch_result else None,
+        }
+
+    def validate_with_user_override(
+        self,
+        validation_result: RuleCheckResult,
+        user_override: bool = False,
+        override_reason: Optional[str] = None,
+    ) -> RuleCheckResult:
+        """
+        Apply user override to validation result (FAZA 29 governance integration).
+
+        Args:
+            validation_result: Original validation result
+            user_override: Whether user overrides the validation
+            override_reason: Reason for override
+
+        Returns:
+            Updated RuleCheckResult
+        """
+        if user_override:
+            logger.warning(
+                f"User override applied to validation result. Reason: {override_reason}"
+            )
+            # Keep violations for audit but mark as passed
+            validation_result.passed = True
+            validation_result.metadata["user_override"] = True
+            validation_result.metadata["override_reason"] = override_reason or "No reason provided"
+            validation_result.metadata["override_timestamp"] = datetime.now().isoformat()
+
+        return validation_result
 
 
 def create_default_rules_engine() -> LLMRulesEngine:

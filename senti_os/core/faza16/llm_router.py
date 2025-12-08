@@ -60,6 +60,8 @@ class RoutingRequest:
     max_tokens_needed: int = 4096
     requires_latest_data: bool = False
     context_length: int = 0
+    required_role: Optional[str] = None  # New: role-based routing
+    risk_level: str = "low"  # New: risk-aware routing (low/moderate/high/critical)
 
 
 @dataclass
@@ -425,6 +427,122 @@ class LLMRouter:
             "average_cost": sum(s.cost_estimate for s in available) / len(available) if available else 0.0,
             "average_reliability": sum(s.reliability_score for s in available) / len(available) if available else 0.0,
         }
+
+    def route_by_role(
+        self,
+        role: str,
+        task_type: TaskType = TaskType.GENERAL_QUERY,
+    ) -> Optional[LLMSource]:
+        """
+        Route request based on required role.
+
+        Args:
+            role: Required role (e.g., "code_generation", "reasoning")
+            task_type: Task type
+
+        Returns:
+            Selected LLMSource or None
+        """
+        available_sources = self.registry.get_available_sources()
+
+        # Filter sources that support the required role
+        role_sources = [
+            src for src in available_sources
+            if hasattr(src, 'roles') and role in getattr(src, 'roles', [])
+        ]
+
+        if not role_sources:
+            logger.warning(f"No sources found for role: {role}")
+            return None
+
+        # Use standard routing on filtered sources
+        request = RoutingRequest(
+            task_type=task_type,
+            required_role=role,
+        )
+
+        # Score and select
+        result = self._score_sources(role_sources, request)
+
+        if result:
+            result.sort(key=lambda x: x[1], reverse=True)
+            return result[0][0]
+
+        return None
+
+    def route_with_risk_awareness(
+        self,
+        request: RoutingRequest,
+        risk_level: str = "low",
+    ) -> RoutingResult:
+        """
+        Route with risk-aware model selection.
+
+        Args:
+            request: Routing request
+            risk_level: Risk level (low/moderate/high/critical)
+
+        Returns:
+            RoutingResult with risk-appropriate model
+        """
+        # Adjust min_reliability based on risk
+        risk_reliability_map = {
+            "low": 0.7,
+            "moderate": 0.75,
+            "high": 0.85,
+            "critical": 0.95,
+        }
+
+        request.min_reliability = risk_reliability_map.get(risk_level, 0.7)
+        request.risk_level = risk_level
+
+        # For high-risk tasks, prefer quality over cost/speed
+        if risk_level in ["high", "critical"]:
+            request.priority_mode = PriorityMode.QUALITY
+
+        logger.info(f"Routing with risk level: {risk_level}, min_reliability: {request.min_reliability}")
+
+        return self.route(request)
+
+    def route_with_fallback(
+        self,
+        request: RoutingRequest,
+        exclude_sources: List[str] = None,
+    ) -> List[LLMSource]:
+        """
+        Route with multi-model fallback chain.
+
+        Args:
+            request: Routing request
+            exclude_sources: List of source IDs to exclude
+
+        Returns:
+            List of LLMSource in fallback order
+        """
+        exclude_sources = exclude_sources or []
+
+        available_sources = [
+            src for src in self.registry.get_available_sources()
+            if src.source_id not in exclude_sources
+        ]
+
+        if not available_sources:
+            logger.warning("No available sources for fallback")
+            return []
+
+        filtered = self._filter_sources(available_sources, request)
+        scored = self._score_sources(filtered, request)
+        scored.sort(key=lambda x: x[1], reverse=True)
+
+        # Return top 3 as fallback chain
+        fallback_chain = [source for source, _ in scored[:3]]
+
+        logger.info(
+            f"Fallback chain created with {len(fallback_chain)} models: "
+            f"{[s.source_id for s in fallback_chain]}"
+        )
+
+        return fallback_chain
 
 
 def create_router(registry: SourceRegistry) -> LLMRouter:

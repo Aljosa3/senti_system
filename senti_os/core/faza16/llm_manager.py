@@ -22,6 +22,8 @@ from senti_os.core.faza16.source_registry import SourceRegistry, create_default_
 from senti_os.core.faza16.subscription_detector import SubscriptionDetector, create_detector
 from senti_os.core.faza16.llm_router import LLMRouter, create_router, RoutingRequest, TaskType, PriorityMode
 from senti_os.core.faza16.llm_rules import LLMRulesEngine, create_default_rules_engine, RuleCheckResult
+from senti_os.core.faza16.llm_config_loader import LLMConfigLoader, create_loader
+from senti_os.core.faza16.llm_health_monitor import LLMHealthMonitor, create_monitor
 
 
 logging.basicConfig(level=logging.INFO)
@@ -85,6 +87,8 @@ class LLMManager:
         rules_engine: Optional[LLMRulesEngine] = None,
         router: Optional[LLMRouter] = None,
         detector: Optional[SubscriptionDetector] = None,
+        config_loader: Optional[LLMConfigLoader] = None,
+        health_monitor: Optional[LLMHealthMonitor] = None,
     ):
         """
         Initialize the LLM Manager.
@@ -94,11 +98,15 @@ class LLMManager:
             rules_engine: LLMRulesEngine instance (created if not provided)
             router: LLMRouter instance (created if not provided)
             detector: SubscriptionDetector instance (created if not provided)
+            config_loader: LLMConfigLoader instance (created if not provided)
+            health_monitor: LLMHealthMonitor instance (created if not provided)
         """
         self.registry = registry or create_default_registry()
         self.rules_engine = rules_engine or create_default_rules_engine()
         self.router = router or create_router(self.registry)
         self.detector = detector or create_detector(self.registry)
+        self.config_loader = config_loader or create_loader()
+        self.health_monitor = health_monitor or create_monitor()
 
         self.request_history: List[LLMResponse] = []
 
@@ -353,6 +361,199 @@ class LLMManager:
         level = level_map.get(subscription_level.lower(), SubscriptionLevel.PRO)
 
         return self.detector.manual_add_api_key(provider, api_key, level)
+
+    def select_model(self, task_profile: Dict) -> Optional[str]:
+        """
+        Select best model for a given task profile.
+
+        Args:
+            task_profile: Dictionary with task requirements
+
+        Returns:
+            Model ID or None
+        """
+        task_type = task_profile.get("task_type", TaskType.GENERAL_QUERY)
+        priority_mode = task_profile.get("priority_mode", PriorityMode.BALANCED)
+
+        routing_request = RoutingRequest(
+            task_type=task_type,
+            priority_mode=priority_mode,
+            max_cost=task_profile.get("max_cost", 1.0),
+            min_reliability=task_profile.get("min_reliability", 0.7),
+            max_tokens_needed=task_profile.get("max_tokens", 4096),
+        )
+
+        routing_result = self.router.route(routing_request)
+
+        if routing_result.selected_source:
+            return routing_result.selected_source.source_id
+
+        return None
+
+    def reroute_on_failure(
+        self,
+        failed_model_id: str,
+        task_profile: Dict,
+    ) -> Optional[str]:
+        """
+        Reroute to alternative model after failure.
+
+        Args:
+            failed_model_id: ID of model that failed
+            task_profile: Task requirements
+
+        Returns:
+            Alternative model ID or None
+        """
+        # Record failure in health monitor
+        self.health_monitor.record_interaction(
+            model_id=failed_model_id,
+            latency_ms=0.0,
+            success=False,
+            error_type="routing_failure",
+        )
+
+        # Update registry reliability
+        self.registry.update_reliability_score(failed_model_id, success=False)
+
+        # Get available sources excluding failed model
+        available_sources = [
+            src for src in self.registry.get_available_sources()
+            if src.source_id != failed_model_id
+        ]
+
+        if not available_sources:
+            logger.warning("No alternative models available for rerouting")
+            return None
+
+        # Select next best model
+        task_type = task_profile.get("task_type", TaskType.GENERAL_QUERY)
+        priority_mode = task_profile.get("priority_mode", PriorityMode.BALANCED)
+
+        routing_request = RoutingRequest(
+            task_type=task_type,
+            priority_mode=priority_mode,
+            max_cost=task_profile.get("max_cost", 1.0),
+            min_reliability=task_profile.get("min_reliability", 0.5),  # Lower threshold for fallback
+            max_tokens_needed=task_profile.get("max_tokens", 4096),
+        )
+
+        routing_result = self.router.route(routing_request)
+
+        if routing_result.selected_source:
+            logger.info(f"Rerouted from {failed_model_id} to {routing_result.selected_source.source_id}")
+            return routing_result.selected_source.source_id
+
+        return None
+
+    def get_model_health(self, model_id: str) -> Dict:
+        """
+        Get health metrics for a specific model.
+
+        Args:
+            model_id: Model identifier
+
+        Returns:
+            Dictionary with health metrics
+        """
+        report = self.health_monitor.get_health_report(model_id)
+
+        return {
+            "model_id": report.model_id,
+            "health_score": report.health_score,
+            "health_status": report.health_status.value,
+            "avg_latency_ms": report.avg_latency_ms,
+            "error_rate": report.error_rate,
+            "avg_hallucination_score": report.avg_hallucination_score,
+            "recommendations": report.recommendations,
+        }
+
+    def score_model_output(
+        self,
+        model_id: str,
+        output: str,
+        expected_type: str = "text",
+    ) -> float:
+        """
+        Score quality of model output.
+
+        Args:
+            model_id: Model identifier
+            output: Model output to score
+            expected_type: Expected output type
+
+        Returns:
+            Quality score (0-1)
+        """
+        score = 1.0
+
+        # Check for empty output
+        if not output or not output.strip():
+            return 0.0
+
+        # Check for hallucination indicators
+        hallucination_indicators = [
+            "I have access to",
+            "I can browse",
+            "I just checked",
+            "According to my latest data",
+        ]
+
+        for indicator in hallucination_indicators:
+            if indicator.lower() in output.lower():
+                score -= 0.2
+
+        # Check for completeness
+        if len(output) < 10:
+            score -= 0.3
+
+        # Check for code quality if expected type is code
+        if expected_type == "code":
+            if "def " not in output and "class " not in output:
+                score -= 0.2
+
+        return max(0.0, min(1.0, score))
+
+    def compare_models(
+        self,
+        output_a: str,
+        output_b: str,
+        model_a_id: str,
+        model_b_id: str,
+    ) -> Dict:
+        """
+        Compare outputs from two models.
+
+        Args:
+            output_a: Output from model A
+            output_b: Output from model B
+            model_a_id: Model A identifier
+            model_b_id: Model B identifier
+
+        Returns:
+            Comparison results
+        """
+        score_a = self.score_model_output(model_a_id, output_a)
+        score_b = self.score_model_output(model_b_id, output_b)
+
+        health_a = self.health_monitor.compute_health_score(model_a_id)
+        health_b = self.health_monitor.compute_health_score(model_b_id)
+
+        return {
+            "model_a": {
+                "id": model_a_id,
+                "output_score": score_a,
+                "health_score": health_a,
+                "output_length": len(output_a),
+            },
+            "model_b": {
+                "id": model_b_id,
+                "output_score": score_b,
+                "health_score": health_b,
+                "output_length": len(output_b),
+            },
+            "recommendation": model_a_id if (score_a + health_a/100) > (score_b + health_b/100) else model_b_id,
+        }
 
 
 def create_manager() -> LLMManager:

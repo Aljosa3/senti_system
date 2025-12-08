@@ -17,6 +17,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 
+from senti_os.core.faza16.spec_validator import create_spec_validator, SpecValidationResult
+from senti_os.core.faza16.code_safety_analyzer import create_analyzer, CodeSafetyReport
+from senti_os.core.faza16.architecture_diff import create_analyzer as create_arch_analyzer, ArchitectureAnalysis
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -85,6 +89,11 @@ class KnowledgeValidationEngine:
         """Initialize the knowledge validation engine."""
         self.knowledge_base: Dict[str, KnowledgeEntry] = {}
         self.conflict_graph: Dict[str, Set[str]] = {}
+
+        # Initialize new validators
+        self.spec_validator = create_spec_validator()
+        self.code_analyzer = create_analyzer()
+        self.arch_analyzer = create_arch_analyzer()
 
         logger.info("Knowledge Validation Engine initialized")
 
@@ -442,6 +451,148 @@ class KnowledgeValidationEngine:
             "outdated_entries": outdated,
             "average_confidence": round(avg_confidence, 3),
         }
+
+    def run_full_validation(
+        self,
+        spec_text: Optional[str] = None,
+        code_text: Optional[str] = None,
+        module_spec: Optional[Dict] = None,
+        module_path: Optional[str] = None,
+    ) -> Dict:
+        """
+        Run full validation pipeline including SPEC, code, and architecture validation.
+
+        Args:
+            spec_text: Optional SPEC document content
+            code_text: Optional code to validate
+            module_spec: Optional module specification
+            module_path: Optional module path
+
+        Returns:
+            Comprehensive validation report
+        """
+        report = {
+            "timestamp": datetime.now().isoformat(),
+            "validations_performed": [],
+            "overall_status": "PASS",
+            "issues_found": 0,
+            "recommendations": [],
+        }
+
+        # SPEC validation
+        if spec_text:
+            spec_result = self.spec_validator.validate_spec(spec_text)
+            report["spec_validation"] = {
+                "is_valid": spec_result.is_valid,
+                "score": spec_result.score,
+                "issues": len(spec_result.issues),
+                "warnings": len(spec_result.warnings),
+            }
+            report["validations_performed"].append("spec")
+            report["issues_found"] += len(spec_result.issues)
+
+            if not spec_result.is_valid:
+                report["overall_status"] = "FAIL"
+                report["recommendations"].append("Fix SPEC validation issues before proceeding")
+
+        # Code validation
+        if code_text:
+            code_result = self.code_analyzer.analyze_code(code_text)
+            report["code_validation"] = {
+                "is_safe": code_result.is_safe,
+                "safety_score": code_result.safety_score,
+                "issues": len(code_result.issues),
+                "warnings": len(code_result.warnings),
+            }
+            report["validations_performed"].append("code")
+            report["issues_found"] += len(code_result.issues)
+
+            if not code_result.is_safe:
+                report["overall_status"] = "FAIL"
+                report["recommendations"].append("Address code safety issues")
+
+        # Architecture validation
+        if module_spec and module_path:
+            arch_result = self.arch_analyzer.analyze_new_module(module_spec, module_path)
+            report["architecture_validation"] = {
+                "is_compatible": arch_result.is_compatible,
+                "compatibility_score": arch_result.compatibility_score,
+                "diffs": len(arch_result.diffs),
+                "warnings": len(arch_result.warnings),
+            }
+            report["validations_performed"].append("architecture")
+            report["issues_found"] += len(arch_result.diffs)
+
+            if not arch_result.is_compatible:
+                report["overall_status"] = "FAIL"
+                report["recommendations"].append("Resolve architecture compatibility issues")
+
+        # Overall assessment
+        if report["issues_found"] == 0:
+            report["overall_status"] = "PASS"
+            report["recommendations"].append("All validations passed - safe to proceed")
+        elif report["overall_status"] == "PASS":
+            report["overall_status"] = "PASS_WITH_WARNINGS"
+            report["recommendations"].append("Review warnings before proceeding")
+
+        logger.info(
+            f"Full validation complete: {report['overall_status']}, "
+            f"Issues={report['issues_found']}, "
+            f"Validations={len(report['validations_performed'])}"
+        )
+
+        return report
+
+    def validate_spec_pipeline(
+        self,
+        spec_text: str,
+        spec_name: str = "unnamed",
+    ) -> SpecValidationResult:
+        """
+        Run SPEC validation pipeline.
+
+        Args:
+            spec_text: SPEC content
+            spec_name: SPEC identifier
+
+        Returns:
+            SpecValidationResult
+        """
+        return self.spec_validator.validate_spec(spec_text, spec_name)
+
+    def validate_code_ast(
+        self,
+        code: str,
+        filename: str = "<string>",
+    ) -> CodeSafetyReport:
+        """
+        Run AST-based code safety analysis.
+
+        Args:
+            code: Python source code
+            filename: Filename for reporting
+
+        Returns:
+            CodeSafetyReport
+        """
+        return self.code_analyzer.analyze_code(code, filename)
+
+    def validate_architecture_diff(
+        self,
+        module_spec: Dict,
+        module_path: str,
+    ) -> ArchitectureAnalysis:
+        """
+        Run architecture diff analysis.
+
+        Args:
+            module_spec: Module specification
+            module_path: Proposed module path
+
+        Returns:
+            ArchitectureAnalysis
+        """
+        return self.arch_analyzer.analyze_new_module(module_spec, module_path)
 
 
 def create_validator() -> KnowledgeValidationEngine:
