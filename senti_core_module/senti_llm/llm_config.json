@@ -1,0 +1,72 @@
+{
+  "version": "30.95",
+  "models": {
+    "gpt-4.1": {
+      "provider": "openai",
+      "display_name": "GPT-4.1",
+      "temperature": 0.7,
+      "max_tokens": 4096,
+      "priority": 1,
+      "capabilities": ["reasoning", "coding", "general"],
+      "cost_tier": "high",
+      "enabled": true
+    },
+    "claude-sonnet-3.7": {
+      "provider": "anthropic",
+      "display_name": "Claude Sonnet 3.7",
+      "temperature": 0.6,
+      "max_tokens": 8192,
+      "priority": 2,
+      "capabilities": ["reasoning", "coding", "general"],
+      "cost_tier": "medium",
+      "enabled": true
+    },
+    "mixtral-8x22b": {
+      "provider": "mistral",
+      "display_name": "Mixtral 8x22B",
+      "temperature": 0.5,
+      "max_tokens": 32768,
+      "priority": 3,
+      "capabilities": ["reasoning", "fallback"],
+      "cost_tier": "low",
+      "enabled": true
+    }
+  },
+  "routing_policy": {
+    "reasoning": ["gpt-4.1", "claude-sonnet-3.7", "mixtral-8x22b"],
+    "coding": ["claude-sonnet-3.7", "gpt-4.1", "mixtral-8x22b"],
+    "fallback": ["mixtral-8x22b", "claude-sonnet-3.7", "gpt-4.1"],
+    "general": ["gpt-4.1", "claude-sonnet-3.7", "mixtral-8x22b"]
+  },
+  "fallback_chain": {
+    "enabled": true,
+    "max_retries": 3,
+    "retry_delay_seconds": 1,
+    "cascade_on_error": true
+  },
+  "safety": {
+    "faza_16_integration": true,
+    "forbidden_patterns": [
+      "os.system",
+      "subprocess",
+      "eval(",
+      "exec(",
+      "__import__",
+      "compile(",
+      "open(",
+      "file(",
+      "input(",
+      "raw_input("
+    ],
+    "sanitization": {
+      "strip_ansi": true,
+      "remove_control_chars": true,
+      "max_output_length": 100000
+    }
+  },
+  "determinism": {
+    "seed": 42,
+    "enforce_reproducibility": true,
+    "cache_responses": false
+  }
+}

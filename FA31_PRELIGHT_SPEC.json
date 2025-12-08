@@ -1,0 +1,25 @@
+{
+  "global_context": {
+    "purpose": "FAZA 31 preflight test",
+    "safety": "Generate only harmless sandbox files"
+  },
+
+  "files": [
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/test_module_a.py",
+      "description": "Minimal test module A"
+    },
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/test_module_b.py",
+      "description": "Minimal test module B"
+    }
+  ],
+
+  "instructions": {
+    "/home/pisarna/senti_system/senti_sandbox/test_module_a.py": 
+      "Ustvari minimalni Python modul z eno funkcijo hello() ki vrne string 'A_OK'. Brez side-effectov, brez main bloka.",
+
+    "/home/pisarna/senti_system/senti_sandbox/test_module_b.py":
+      "Ustvari minimalni Python modul z eno funkcijo value() ki vrne integer 123. Brez side-effectov, brez main bloka."
+  }
+}

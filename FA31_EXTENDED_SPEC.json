@@ -1,0 +1,63 @@
+{
+  "global_context": {
+    "task": "FAZA 31 EXTENDED PIPELINE TEST",
+    "purpose": "Comprehensive multi-file generation test with classes, functions, data structures, and validation scenarios",
+    "safety": "All modules must be sandbox-safe and comply with FA31_LLM_CONTRACT.md",
+    "test_scope": "Tests syntax validation, semantic validation, inter-module imports, class definitions, and error detection",
+    "notes": "This is not production code. Only to test stability of the Auto-Build System."
+  },
+
+  "files": [
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/ext_math_utils.py",
+      "description": "Mathematical utility functions module"
+    },
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/ext_data_stack.py",
+      "description": "Stack data structure implementation"
+    },
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/ext_data_queue.py",
+      "description": "Queue data structure implementation"
+    },
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/ext_validator.py",
+      "description": "Data validation utilities"
+    },
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/ext_formatter.py",
+      "description": "String formatting and text manipulation"
+    },
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/ext_calculator.py",
+      "description": "Calculator class with operation history"
+    },
+    {
+      "path": "/home/pisarna/senti_system/senti_sandbox/ext_aggregator.py",
+      "description": "Module that imports and aggregates other modules"
+    }
+  ],
+
+  "instructions": {
+    "/home/pisarna/senti_system/senti_sandbox/ext_math_utils.py":
+      "Ustvari modul z matematičnimi funkcijami: add(a, b), subtract(a, b), multiply(a, b), divide(a, b), power(base, exp), factorial(n). Funkcija divide vrne None če b == 0. Funkcija factorial vrne 1 za n <= 1, sicer n * factorial(n-1). Brez side-effectov, brez uvozov, brez main bloka.",
+
+    "/home/pisarna/senti_system/senti_sandbox/ext_data_stack.py":
+      "Ustvari modul z razredom Stack. Implementiraj metode: __init__(self), push(self, item), pop(self) ki vrne item ali None če prazen, peek(self) ki vrne top item ali None, is_empty(self) vrne bool, size(self) vrne int, clear(self). Uporabi list interno za storage. Dodaj metodo __str__(self) ki vrne string reprezentacijo. Brez side-effectov, brez uvozov, brez main bloka.",
+
+    "/home/pisarna/senti_system/senti_sandbox/ext_data_queue.py":
+      "Ustvari modul z razredom Queue. Implementiraj metode: __init__(self), enqueue(self, item), dequeue(self) ki vrne item ali None, front(self) ki vrne front item ali None, is_empty(self) vrne bool, size(self) vrne int. Uporabi list interno. Dodaj metodo __str__(self). Brez side-effectov, brez uvozov, brez main bloka.",
+
+    "/home/pisarna/senti_system/senti_sandbox/ext_validator.py":
+      "Ustvari modul z validacijskimi funkcijami: is_positive(n) vrne bool, is_even(n) vrne bool, is_in_range(n, min_val, max_val) vrne bool, is_valid_string(s) preveri če je s neprazen string, validate_number(n, min_val=None, max_val=None) vrne tuple (bool, string) z result in razlogom. Brez side-effectov, brez uvozov, brez main bloka.",
+
+    "/home/pisarna/senti_system/senti_sandbox/ext_formatter.py":
+      "Ustvari modul z formatiranjem: capitalize_words(text) kapitalizira vsako besedo, reverse_string(text) obrne string, truncate(text, max_length, suffix='...') skrajša z suffisom, pad_left(text, width, char=' '), pad_right(text, width, char=' '), center(text, width, char=' '), remove_whitespace(text). Brez side-effectov, brez uvozov, brez main bloka.",
+
+    "/home/pisarna/senti_system/senti_sandbox/ext_calculator.py":
+      "Ustvari modul z razredom Calculator. Implementiraj: __init__(self) inicializira history list, add(self, a, b), subtract(self, a, b), multiply(self, a, b), divide(self, a, b) vrne None če b==0, power(self, base, exp), sqrt(self, n) uporabi aproximacijo brez math lib, get_history(self) vrne list operacij, clear_history(self). Vsaka operacija doda string v history kot 'op(a,b)=result'. Brez side-effectov, brez uvozov, brez main bloka.",
+
+    "/home/pisarna/senti_system/senti_sandbox/ext_aggregator.py":
+      "Ustvari modul ki uvozi ext_math_utils in ext_validator. Definiraj funkcijo safe_divide(a, b) ki uporablja ext_validator.is_positive(b) in ext_math_utils.divide(a, b). Definiraj funkcijo validated_add(a, b) ki preveri če sta a in b številke z isinstance in potem uporabi ext_math_utils.add. Definiraj get_available_operations() ki vrne list stringov z imeni operacij. Brez side-effectov, brez main bloka."
+  }
+}
