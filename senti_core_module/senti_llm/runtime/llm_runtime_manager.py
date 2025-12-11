@@ -1,5 +1,5 @@
 """
-LLM Runtime Manager — FAZA 31–35 INTEGRACIJA
+LLM Runtime Manager — FAZA 38 INTEGRACIJA
 --------------------------------------------
 Ta datoteka združuje:
 
@@ -13,14 +13,31 @@ FAZA 34–35:
     - ExecutionRouter (pretvorba ukazov → RuntimeAction)
     - ExecutionOrchestrator (izvedba akcij)
 
+FAZA 36–37:
+    - ModuleLoader (dinamično nalaganje modulov)
+    - ModuleRegistry (register naloženih modulov)
+    - ModuleValidation (validacija modulov)
+    - CapabilityManager (capability injection system)
+    - Novi ukazi: load, list
+
+FAZA 38:
+    - ModuleStorage (secure per-module storage)
+    - Storage capabilities: storage.read, storage.write
+    - Atomic file operations
+    - Path traversal prevention
+
 Dodano:
     - Minimalni testni ukazi:
          "run demo"
          "status"
          "task refresh"
+         "load <path>"
+         "list"
+         "run storage_demo"  # FAZA 38
 
 Cilj:
-    Omogočiti prvi end-to-end tok Senti LLM Runtime.
+    Omogočiti prvi end-to-end tok Senti LLM Runtime z dinamičnim nalaganjem modulov
+    in varnim per-module file storage sistemom.
 """
 
 from __future__ import annotations
@@ -32,48 +49,50 @@ from typing import Any, Dict, Optional
 #  OBSTOJEČI MODULI (FAZA 31–33)
 # ===============================
 
-from senti_llm.runtime.llm_runtime_preflight import LLMRuntimePreflight
-from senti_llm.runtime.llm_runtime_context import RuntimeContext
-from senti_llm.runtime.llm_response_builder import LLMResponseWrapper
-from senti_llm.runtime.llm_router import RuntimeRouter
-from senti_llm.llm_client import LLMClient
+from senti_core_module.senti_llm.runtime.llm_runtime_preflight import LLMRuntimePreflight
+from senti_core_module.senti_llm.runtime.llm_runtime_context import RuntimeContext
+from senti_core_module.senti_llm.runtime.llm_response_builder import LLMResponseWrapper
+from senti_core_module.senti_llm.runtime.llm_router import RuntimeRouter
+from senti_core_module.senti_llm.llm_client import LLMClient
 
 # ===============================
-#  NOVI MODULI (FAZA 34–35)
+#  EXECUTION LAYER (FAZA 34–35)
 # ===============================
 
-from senti_llm.runtime.execution_router import ExecutionRouter
-from senti_llm.runtime.execution_orchestrator import ExecutionOrchestrator
-from senti_llm.runtime.action_model import RuntimeAction
+from senti_core_module.senti_llm.runtime.execution_router import ExecutionRouter
+from senti_core_module.senti_llm.runtime.execution_orchestrator import ExecutionOrchestrator
+from senti_core_module.senti_llm.runtime.action_model import RuntimeAction
 
 
 class LLMRuntimeManager:
     """
     Centralni runtime nadzornik za Senti OS — LLM plast.
 
-    Od FAZA 35 naprej runtime obdeluje tudi:
+    Od FAZA 36.2 naprej runtime obdeluje tudi:
         - ukaze (CLI ali LLM) preko ExecutionRouter
         - dejanja preko ExecutionOrchestrator
+        - dinamično nalaganje modulov preko ModuleLoader
 
     Namen:
-        Zagotoviti stabilno, preverjeno, modularno LLM infrastrukturo.
+        Zagotoviti stabilno, preverjeno, modularno LLM infrastrukturo z možnostjo
+        dinamičnega nalaganja modulov runtime.
     """
 
     def __init__(self) -> None:
         # FAZA 31 — inicializacija osnovnih komponent
         self.preflight = LLMRuntimePreflight()
-        self.context = RuntimeContext(prompt="", capability="")
+        self.context = RuntimeContext(prompt="", capability="execution")
         self.router = RuntimeRouter(config={})
         self.response_wrapper = LLMResponseWrapper(provider="openai")
 
         # FAZA 31–33 — model client
         self.llm_client = LLMClient()
 
-        # FAZA 34–35 — execution layer
+        # FAZA 34–36.2 — execution layer
         self.exec_router = ExecutionRouter()
-        self.exec_orchestrator = ExecutionOrchestrator()
+        self.exec_orchestrator = ExecutionOrchestrator(context=self.context)
 
-        print("[LLM Runtime Manager] Inicializiran (FAZA 31–35).")
+        print("[LLM Runtime Manager] Inicializiran (FAZA 36.2).")
 
     # ================================================================
     #                J A V N I   A P I
@@ -83,7 +102,7 @@ class LLMRuntimeManager:
         """
         Glavni vhodni mehanizem za CLI / LLM / API.
 
-        1. Preveri, ali je user_input ukaz (run/status/task).
+        1. Preveri, ali je user_input ukaz (run/status/task/load/list).
         2. Če je ukaz → predaj v Execution Layer.
         3. Če ni ukaz → procesiraj kot naravni LLM poziv.
         """
@@ -104,13 +123,17 @@ class LLMRuntimeManager:
             run XYZ
             status
             task XYZ
+            load XYZ        # FAZA 36.2
+            list            # FAZA 36.2
         """
         stripped = text.strip().lower()
 
         return (
             stripped.startswith("run ") or
             stripped.startswith("status") or
-            stripped.startswith("task ")
+            stripped.startswith("task ") or
+            stripped.startswith("load ") or     # FAZA 36.2
+            stripped.startswith("list")          # FAZA 36.2
         )
 
     def _process_execution_command(self, command: str, source: str) -> Dict[str, Any]:
@@ -178,16 +201,19 @@ class LLMRuntimeManager:
 
     def run_demo_tests(self) -> Dict[str, Any]:
         """
-        Interni test treh osnovnih execution ukazov.
-        Namenjen je preverjanju, ali FAZA 34–35 deluje.
+        Interni test osnovnih execution ukazov.
+        Namenjen je preverjanju, ali FAZA 38 deluje.
         """
 
         results: Dict[str, Any] = {}
 
         test_commands = [
-            "run demo",
             "status",
+            "run demo",
             "task refresh",
+            "list",                                                            # FAZA 36.2
+            "load senti_core_module/senti_llm/modules/storage_demo_module.py",  # FAZA 38
+            "run storage_demo",                                                # FAZA 38
         ]
 
         for cmd in test_commands:
@@ -206,7 +232,7 @@ if __name__ == "__main__":
     results = manager.run_demo_tests()
 
     print("\n=====================================")
-    print("   TESTNI REZULTATI (FAZA 34–35)")
+    print("   TESTNI REZULTATI (FAZA 38)")
     print("=====================================\n")
 
     for k, v in results.items():

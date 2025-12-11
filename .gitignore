@@ -1,69 +1,125 @@
-# Do NOT push backups to GitHub
-backups/
-**/backups/
-*.zip
-*.sha256
+# =======================================================
+# Senti OS Runtime — MASTER .gitignore
+# Comprehensive runtime exclusion for FAZA 1–44
+# =======================================================
 
-# ===================================
-# Senti System — Global .gitignore
-# ===================================
-
-# Python caches
+# ---------------------------
+# Python bytecode & caches
+# ---------------------------
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pdb
+*.pkl
 
+# ---------------------------
 # Virtual environments
+# ---------------------------
 venv/
 env/
 .taenv/
 .venv/
+*/venv/
+*/.venv/
 
-# Editors / IDE
+# ---------------------------
+# Editors / IDE config
+# ---------------------------
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Logs
-*.log
-logs/
-runtime_logs/
-*.stderr
-*.stdout
-
-# Temporary AI output
-*.tmp
-*.temp
-tmp/
-
-# Model checkpoints / artifacts
-checkpoints/
-models/
-model_cache/
-
-# Upload cache for future modules
-uploads/
-
-# Python packaging
-build/
-dist/
-*.egg-info/
-
-# System files
+# ---------------------------
+# OS files
+# ---------------------------
 .DS_Store
 Thumbs.db
 
-# Senti internal tooling caches
-cache/
-state/
-.senti/
-.run_cache/
+# ---------------------------
+# Logs (runtime + custom)
+# ---------------------------
+*.log
+logs/
+runtime_logs/
+senti_data/logs/
+*/logs/
+*.stderr
+*.stdout
 
-# Backups (ZIP)
+# ---------------------------
+# Temporary / AI output
+# ---------------------------
+*.tmp
+*.temp
+tmp/
+temp/
+__temp__/
+scratch/
+
+# ---------------------------
+# Backups (NE SMEJO ITI NA GITHUB)
+# ---------------------------
 backups/
+**/backups/
 __senti_backups__/
+*.zip
+*.tar
+*.gz
+*.sha256
 
-# Jupyter
+# ---------------------------
+# Senti OS Runtime Data
+# (These are generated at runtime, never versioned)
+# ---------------------------
+senti_data/
+**/senti_data/
+data/
+memory_store/
+state/
+run_cache/
+.cache/
+.senti/
+.restored/
+RESTORED/
+uploads/
+__runtime__/
+sandbox/
+runtime/
+
+# ---------------------------
+# AutoDoc generated docs
+# (source docs remain)
+# ---------------------------
+docs/generated/
+docs/schemas/
+
+# ---------------------------
+# Python packaging artifacts
+# ---------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# ---------------------------
+# Model artifacts (future)
+# ---------------------------
+models/
+model_cache/
+checkpoints/
+
+# ---------------------------
+# Jupyter outputs
+# ---------------------------
 .ipynb_checkpoints/
 *.ipynb
-EOF
+
+# ---------------------------
+# Local scripts not intended for GitHub
+# ---------------------------
+github_push_pro.sh
+senti_local.sh
+*.local.sh
