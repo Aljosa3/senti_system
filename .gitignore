@@ -71,7 +71,7 @@ __senti_backups__/
 
 # ---------------------------
 # Senti OS Runtime Data
-# (These are generated at runtime, never versioned)
+# (Generated at runtime, never versioned)
 # ---------------------------
 senti_data/
 **/senti_data/
@@ -88,9 +88,15 @@ __runtime__/
 sandbox/
 runtime/
 
+# --------------------------------
+# FAZA 46+ — Canonical runtime code
+# (EXPLICITLY VERSIONED)
+# --------------------------------
+!senti_core_module/senti_llm/runtime/
+!senti_core_module/senti_llm/runtime/**
+
 # ---------------------------
 # AutoDoc generated docs
-# (source docs remain)
 # ---------------------------
 docs/generated/
 docs/schemas/
@@ -123,3 +129,8 @@ checkpoints/
 github_push_pro.sh
 senti_local.sh
 *.local.sh
+# --------------------------------
+# Runtime Python cache (ALWAYS IGNORE)
+# --------------------------------
+senti_core_module/senti_llm/runtime/**/__pycache__/
+senti_core_module/senti_llm/runtime/**/*.pyc
