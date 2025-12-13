@@ -1,19 +1,20 @@
 """
 Senti OS — Execution Layer
-FAZA 50 — FILE 2/?
+FAZA 50 — FILE 3/?
 
-Guarded lifecycle hooks
-----------------------
+Resolver guard & executor contract validation
+---------------------------------------------
 
 Namen:
-    - Ojača minimalni execution tok z zaščito pred napakami v hookih.
-    - Če hook pade, se execution deterministično zaključi z FAILED.
-    - Brez dodajanja novih sposobnosti ali avtonomije.
+    - Validira rezultat executor_resolver.resolve().
+    - Executor mora biti callable in sprejeti keyword-only argument `context`.
+    - V primeru kršitve se execution zaključi z FAILED.
 """
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Optional
+import inspect
+from typing import Any, Mapping, Optional, Callable
 
 from .execution_result import ExecutionResult
 from .execution_report import ExecutionReport
@@ -23,7 +24,9 @@ from .executor_invocation import invoke_executor_safely
 
 class ExecutionEngine:
     """
-    ExecutionEngine z guardi za lifecycle hooke (FAZA 50 — FILE 2/?).
+    ExecutionEngine z:
+        - guarded lifecycle hooki
+        - resolver guardom (FAZA 50 — FILE 3/?)
     """
 
     def __init__(
@@ -37,58 +40,91 @@ class ExecutionEngine:
             hooks if hooks is not None else NoOpExecutionLifecycleHooks()
         )
 
+    def _validate_executor(self, executor: Any) -> Optional[str]:
+        """
+        Validira executor contract.
+        Vrne None, če je OK, sicer error string.
+        """
+        if not callable(executor):
+            return "resolver returned non-callable executor"
+
+        try:
+            sig = inspect.signature(executor)
+        except (TypeError, ValueError):
+            return "executor signature not introspectable"
+
+        params = sig.parameters
+
+        if "context" not in params:
+            return "executor must accept keyword-only argument 'context'"
+
+        param = params["context"]
+        if param.kind is not inspect.Parameter.KEYWORD_ONLY:
+            return "executor 'context' must be keyword-only"
+
+        return None
+
     def execute(
         self,
         execution_context: Mapping[str, Any],
         execution_budget: Mapping[str, Any],
     ) -> ExecutionReport:
         """
-        Izvede en execution turn z zaščitenimi hooki.
-
-        Pravila:
-            - Če pre_execute hook pade → execution FAILED, executor se ne kliče.
-            - Executor se kliče natanko enkrat.
-            - Če post_execute hook pade → execution FAILED.
-            - Vedno vrne ExecutionReport.
+        Izvede en execution turn z:
+            - guarded hooki
+            - resolver guardom
         """
 
-        # 1) pre-execute hook (guarded)
+        # 1) pre-execute hook
         try:
             self._hooks.pre_execute(execution_context, execution_budget)
         except BaseException as exc:
-            failed = ExecutionResult.failed(
-                error=f"pre_execute hook failed: {exc.__class__.__name__}: {exc}"
-            )
             return ExecutionReport.from_execution(
-                execution_context=execution_context,
-                execution_budget=execution_budget,
-                result=failed,
+                execution_context,
+                execution_budget,
+                ExecutionResult.failed(
+                    error=f"pre_execute hook failed: {exc.__class__.__name__}: {exc}"
+                ),
             )
 
-        # 2) resolve executor (ne guardamo – resolver je del core toka)
-        executor = self._executor_resolver.resolve(execution_context)
+        # 2) resolve executor
+        try:
+            executor = self._executor_resolver.resolve(execution_context)
+        except BaseException as exc:
+            return ExecutionReport.from_execution(
+                execution_context,
+                execution_budget,
+                ExecutionResult.failed(
+                    error=f"resolver failed: {exc.__class__.__name__}: {exc}"
+                ),
+            )
 
-        # 3) invoke executor safely (že normalizira napake)
-        result: ExecutionResult = invoke_executor_safely(
+        # 3) validate executor contract
+        error = self._validate_executor(executor)
+        if error is not None:
+            return ExecutionReport.from_execution(
+                execution_context,
+                execution_budget,
+                ExecutionResult.failed(error=error),
+            )
+
+        # 4) invoke executor safely
+        result = invoke_executor_safely(
             executor=executor,
             execution_context=execution_context,
         )
 
-        # 4) post-execute hook (guarded)
+        # 5) post-execute hook
         try:
-            self._hooks.post_execute(
-                execution_context,
-                execution_budget,
-                result,
-            )
+            self._hooks.post_execute(execution_context, execution_budget, result)
         except BaseException as exc:
             result = ExecutionResult.failed(
                 error=f"post_execute hook failed: {exc.__class__.__name__}: {exc}"
             )
 
-        # 5) build execution report
+        # 6) report
         return ExecutionReport.from_execution(
-            execution_context=execution_context,
-            execution_budget=execution_budget,
-            result=result,
+            execution_context,
+            execution_budget,
+            result,
         )
