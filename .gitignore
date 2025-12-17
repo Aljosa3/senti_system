@@ -134,3 +134,5 @@ senti_local.sh
 # --------------------------------
 senti_core_module/senti_llm/runtime/**/__pycache__/
 senti_core_module/senti_llm/runtime/**/*.pyc
+.core_lock_confirmations.jsonl
+senti_core_module/senti_core/control_layer/
