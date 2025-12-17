@@ -8,6 +8,8 @@ This module provides:
 - Runtime enforcement of CORE immutability
 - Write protection for CORE files
 - Mutation detection and prevention
+
+FAZA 59.5: All violations are logged to audit trail.
 """
 
 import json
@@ -16,6 +18,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, List
 import sys
+
+from senti_os.security.violation_logger import get_violation_logger
 
 
 @dataclass
@@ -193,11 +197,22 @@ class CoreLockStateManager:
 
         if not permitted:
             status = self.get_lock_status()
+
+            # Log violation to audit trail
+            logger = get_violation_logger(str(self.repo_root))
+            logger.log_core_mutation_attempt(
+                file_path=file_path,
+                operation="write",
+                lock_timestamp=status.lock_timestamp,
+                confirmation_id=status.lock_confirmation_id
+            )
+
             raise PermissionError(
                 f"CORE LOCK VIOLATION: {reason}\n"
                 f"CORE was locked at: {status.lock_timestamp}\n"
                 f"Authorization: {status.lock_confirmation_id}\n"
-                f"Modifications require CORE UPGRADE procedure."
+                f"Modifications require CORE UPGRADE procedure.\n"
+                f"Violation logged to audit trail."
             )
 
 

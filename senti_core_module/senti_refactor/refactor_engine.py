@@ -43,10 +43,21 @@ class RefactorEngine:
         # FAZA 59.5: Check CORE lock state FIRST
         lock_manager = get_core_lock_manager(str(self.project_root))
         if lock_manager.is_locked():
+            # Log violation
+            from senti_os.security.violation_logger import get_violation_logger
+            logger = get_violation_logger(str(self.project_root))
+            logger.log_core_mutation_attempt(
+                file_path=str(file_path),
+                operation="refactor",
+                engine="RefactorEngine",
+                patch_action=patch.get("action", "unknown")
+            )
+
             raise CoreMutationError(
                 "CORE LOCK VIOLATION: Refactor Engine is DISABLED when CORE is locked.\n"
                 "Code refactoring is prohibited post-lock.\n"
-                "CORE modifications require CORE UPGRADE procedure."
+                "CORE modifications require CORE UPGRADE procedure.\n"
+                "Violation logged to audit trail."
             )
 
         # Also check if target file is a CORE file

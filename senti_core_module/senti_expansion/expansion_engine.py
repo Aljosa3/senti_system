@@ -47,10 +47,21 @@ class ExpansionEngine:
         # FAZA 59.5: Check CORE lock state
         lock_manager = get_core_lock_manager(str(self.project_root))
         if lock_manager.is_locked():
+            # Log violation
+            from senti_os.security.violation_logger import get_violation_logger
+            logger = get_violation_logger(str(self.project_root))
+            logger.log_core_mutation_attempt(
+                file_path=f"{target_dir}/{module_name}",
+                operation="expansion",
+                engine="ExpansionEngine",
+                module_name=module_name
+            )
+
             raise CoreMutationError(
                 "CORE LOCK VIOLATION: Expansion Engine is disabled when CORE is locked.\n"
                 "Module expansion is prohibited post-lock.\n"
-                "CORE modifications require CORE UPGRADE procedure."
+                "CORE modifications require CORE UPGRADE procedure.\n"
+                "Violation logged to audit trail."
             )
 
         module_path = self.project_root / target_dir / module_name
