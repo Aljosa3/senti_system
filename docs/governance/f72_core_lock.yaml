@@ -1,0 +1,40 @@
+f72_core_lock:
+  status: final
+  applies_from_phase: 72
+  mutability: immutable
+
+  declaration:
+    governance_core: locked
+    lock_type: irreversible
+
+  scope:
+    includes:
+      - phase_definitions
+      - phase_ordering
+      - authority_constraints
+      - execution_prohibitions
+      - intentional_absences
+      - interpretation_rules
+      - governance_meta
+
+  prohibitions:
+    modify_governance: false
+    reinterpret_governance: false
+    add_core_phases: false
+    derive_execution_authority: false
+    introduce_execution_paths: false
+    define_exceptions: false
+    enable_rollbacks: false
+
+  authority:
+    transferable: false
+    inheritable: false
+    reconstructible: false
+
+  enforcement:
+    requires_mechanism: false
+    allows_override: false
+
+  finality:
+    reversible: false
+    temporal_limit: none
