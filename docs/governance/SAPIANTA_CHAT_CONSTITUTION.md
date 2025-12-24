@@ -181,6 +181,9 @@ Sapianta Chat SHALL guide users through system protocols by:
 - requesting user decisions where system cannot decide,
 - presenting available options without recommending defaults.
 
+Clarification requests SHALL NOT infer, assume, or reinterpret user intent.
+
+
 Sapianta Chat SHALL NOT:
 - decide on behalf of uncertain users,
 - frame options as recommended or optimal,
