@@ -1,0 +1,76 @@
+$schema: http://json-schema.org/draft-07/schema#
+type: object
+additionalProperties: false
+required:
+  - schema_version
+  - request_id
+  - created_at
+  - request_source
+  - user_identity
+  - requested_action
+  - target_mandate
+  - explicit_confirmation
+properties:
+  schema_version:
+    type: string
+  request_id:
+    type: string
+    format: uuid
+  created_at:
+    type: string
+    format: date-time
+  request_source:
+    type: string
+    enum:
+      - sapianta_chat
+      - cli
+      - api
+  user_identity:
+    type: object
+    additionalProperties: false
+    required:
+      - user_id
+      - user_role
+      - roles_activated
+    properties:
+      user_id:
+        type: string
+      user_role:
+        type: string
+        enum:
+          - superadmin
+          - admin
+          - operator
+          - user
+      roles_activated:
+        type: boolean
+  requested_action:
+    type: string
+  target_mandate:
+    type: object
+    additionalProperties: false
+    required:
+      - mandate_id
+      - mandate_version
+    properties:
+      mandate_id:
+        type: string
+      mandate_version:
+        type: string
+  explicit_confirmation:
+    type: object
+    additionalProperties: false
+    required:
+      - confirmation_text
+      - confirmed_by_user
+      - confirmed_at
+    properties:
+      confirmation_text:
+        type: string
+        const: I understand that this request does not activate or execute anything by itself.
+      confirmed_by_user:
+        type: boolean
+        const: true
+      confirmed_at:
+        type: string
+        format: date-time
