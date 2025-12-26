@@ -2,11 +2,24 @@
 Sapianta Chat Response Engine
 
 Handles input processing and response generation.
+Returns canonical response IDs only.
 No execution, no decision-making, no intelligence.
 """
 
-from sapianta_chat.capabilities import is_capable
 
+# ==================================================
+# Canonical Response IDs (Phase 70)
+# ==================================================
+
+CR_GENERIC_ACK = "CR-01"
+CR_ACTION_DETECTED = "CR-03"
+CR_STATUS = "CR-05"
+CR_DATA_REQUIRED = "CR-06"
+
+
+# ==================================================
+# Intent Detection
+# ==================================================
 
 ACTION_KEYWORDS = [
     "create",
@@ -25,17 +38,20 @@ ACTION_KEYWORDS = [
     "configure",
 ]
 
+DATA_RESULT_KEYWORDS = [
+    "simulate",
+    "simulation",
+    "analyze",
+    "analysis",
+    "calculate",
+    "calculation",
+    "report",
+    "estimate",
+    "evaluation",
+]
+
 
 def detect_action_intent(user_input):
-    """
-    Detect if input appears to request an action.
-
-    Args:
-        user_input: Raw user input string
-
-    Returns:
-        Boolean indicating if input appears to be an action request
-    """
     input_lower = user_input.lower().strip()
 
     for keyword in ACTION_KEYWORDS:
@@ -45,36 +61,32 @@ def detect_action_intent(user_input):
     return False
 
 
-def generate_response(user_input):
-    """
-    Generate a controlled response to user input.
+def detect_data_dependent_request(user_input):
+    input_lower = user_input.lower()
 
-    Args:
-        user_input: Raw user input string
+    for keyword in DATA_RESULT_KEYWORDS:
+        if keyword in input_lower:
+            return True
 
-    Returns:
-        Response string
-    """
+    return False
+
+
+# ==================================================
+# Response Generation (ID only)
+# ==================================================
+
+def generate_response_id(user_input):
     if not user_input or not user_input.strip():
-        return "Input received. No content detected."
+        return CR_GENERIC_ACK
 
     if detect_action_intent(user_input):
-        return "Action detected. This capability is not implemented."
+        return CR_ACTION_DETECTED
 
-    return "Input acknowledged. This is a reflection message. No action will be taken."
+    if detect_data_dependent_request(user_input):
+        return CR_DATA_REQUIRED
+
+    return CR_GENERIC_ACK
 
 
-def get_status_message():
-    """
-    Generate a status message showing current capabilities.
-
-    Returns:
-        Formatted status string
-    """
-    from sapianta_chat.capabilities import get_all_capabilities
-
-    caps = get_all_capabilities()
-    enabled_count = sum(1 for v in caps.values() if v)
-    total_count = len(caps)
-
-    return f"Capabilities: {enabled_count}/{total_count} enabled"
+def get_status_response_id():
+    return CR_STATUS

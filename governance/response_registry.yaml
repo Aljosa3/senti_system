@@ -1,0 +1,23 @@
+CR-01:
+  name: Generic Acknowledgement
+  text: "Input acknowledged. No action will be taken."
+  scope: chat
+  mutable: false
+
+CR-03:
+  name: Action Intent Detected
+  text: "Action detected. This capability is not implemented."
+  scope: chat
+  mutable: false
+
+CR-05:
+  name: Status
+  text: "Capabilities: 0/10 enabled."
+  scope: chat
+  mutable: false
+
+CR-06:
+  name: Data Required
+  text: "This request requires real input data. No data was provided."
+  scope: chat
+  mutable: false

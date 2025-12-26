@@ -6,7 +6,8 @@ No execution capabilities. No agent behavior.
 """
 
 import sys
-from sapianta_chat.engine import generate_response, get_status_message
+from sapianta_chat.engine import generate_response_id, get_status_response_id
+from sapianta_chat.response_registry import get_response_text
 
 
 WELCOME_MESSAGE = """Sapianta Chat is running in limited mode.
@@ -17,26 +18,15 @@ EXIT_COMMANDS = ["exit", "quit", "q"]
 
 
 def print_welcome():
-    """Print the controlled welcome message."""
     print(WELCOME_MESSAGE)
     print()
 
 
 def print_prompt():
-    """Print the input prompt."""
     print("> ", end="", flush=True)
 
 
 def handle_special_command(user_input):
-    """
-    Handle special commands that don't require processing.
-
-    Args:
-        user_input: Raw user input string
-
-    Returns:
-        Boolean indicating if command was handled
-    """
     stripped = user_input.strip().lower()
 
     if stripped in EXIT_COMMANDS:
@@ -44,7 +34,8 @@ def handle_special_command(user_input):
         return True
 
     if stripped == "status":
-        print(get_status_message())
+        response_id = get_status_response_id()
+        print(get_response_text(response_id))
         return True
 
     if stripped == "help":
@@ -57,7 +48,6 @@ def handle_special_command(user_input):
 
 
 def run():
-    """Main CLI loop."""
     print_welcome()
 
     try:
@@ -76,8 +66,8 @@ def run():
                     break
                 continue
 
-            response = generate_response(user_input)
-            print(response)
+            response_id = generate_response_id(user_input)
+            print(get_response_text(response_id))
             print()
 
     except KeyboardInterrupt:
