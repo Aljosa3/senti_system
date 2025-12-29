@@ -30,23 +30,33 @@ def run_chat_repl():
 
         cmd = user_input.lower()
 
+        # ── EXIT ─────────────────────────
         if cmd in ("exit", "quit"):
             print("Session ended.")
             break
 
+        # ── CLEAR ────────────────────────
         if cmd == "clear":
             os.system('clear' if os.name != 'nt' else 'cls')
             continue
 
+        # ── SUMMARY ──────────────────────
         if cmd == "summary":
             print(state.summary())
             continue
 
+        # ── EXPLICIT MODE SWITCH ─────────
         if cmd in ("draft", "propose"):
             print(MODE_SEPARATOR)
             state.set_mode(cmd.upper())
             print(f"mode: {state.mode}")
             continue
 
-        # vse ostalo se šteje kot vsebina trenutnega konteksta
+        # ── IMPLICIT DRAFT (B10.1) ───────
+        if state.mode == "INSPECT":
+            print(MODE_SEPARATOR)
+            state.set_mode("DRAFT")
+            print(f"mode: {state.mode}")
+
+        # ── CONTENT LINE ─────────────────
         state.add_line(user_input)
