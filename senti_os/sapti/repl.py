@@ -1,15 +1,18 @@
 import os
 from .state import SessionState
+from . import events
 
 
 def run_chat_repl():
     state = SessionState()
+    events.emit("SESSION_STARTED")
     print(f"{state.mode} > ", end="", flush=True)
 
     while True:
         try:
             user_input = input().strip()
         except (EOFError, KeyboardInterrupt):
+            events.emit("SESSION_ABORTED")
             print("\nexit")
             break
 
@@ -21,6 +24,7 @@ def run_chat_repl():
 
         # ── EXIT ─────────────────────────
         if cmd in ("exit", "quit"):
+            events.emit("SESSION_ENDED")
             print("Session ended.")
             break
 
@@ -39,11 +43,14 @@ def run_chat_repl():
         # ── EXPLICIT MODE SWITCH ─────────
         if cmd in ("draft", "propose"):
             state.set_mode(cmd.upper())
+            if cmd == "propose":
+                events.emit("PROPOSE_ENTERED")
             print(f"{state.mode} > ", end="", flush=True)
             continue
 
         # ── IMPLICIT DRAFT (B10.1) ───────
         if state.mode == "INSPECT":
+            events.emit("IMPLICIT_DRAFT_TRIGGERED")
             state.set_mode("DRAFT")
             print(f"{state.mode} > ", end="", flush=True)
 
