@@ -1,0 +1,58 @@
+f72_core_lock:
+  status: draft
+  activation_phase: 72
+  scope:
+    - chat
+    - cli
+    - modules
+    - automation
+    - governance
+
+  principles:
+
+    decision_range:
+      must_present_range: true
+      include_edge_options: true
+      allow_recommendations: false
+      decision_owner: user
+      uncertainty_handling:
+        clarify_criteria: true
+        choose_for_user: false
+
+    segmental_autonomy:
+      maximize_automation: true
+      forbidden_automation_domains:
+        - goal_definition
+        - criteria_modification
+        - responsibility_assignment
+      confirmation_points:
+        allowed_only_if:
+          - prevents_agent_drift
+          - preserves_user_authority
+        must_be_minimal: true
+        must_be_justified: true
+
+    synergistic_segmentation:
+      allow_segments: true
+      allowed_shared_elements:
+        - data
+        - signals
+        - analysis_results
+      forbidden_shared_elements:
+        - decisions
+        - goals
+        - normative_judgments
+      forbid_global_decision_center: true
+
+    global_agency:
+      prohibited:
+        - autonomous_goal_setting
+        - global_optimization
+        - best_choice_determination
+        - unified_agent_behavior
+
+  enforcement:
+    phase_locked: true
+    override_allowed: false
+    ux_bypass_allowed: false
+    interpretation_softening_allowed: false
