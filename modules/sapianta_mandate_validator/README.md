@@ -41,3 +41,13 @@ Execution is **never allowed** in Phase II.2.
 from sapianta_mandate_validator.validator import validate_mandate
 
 result = validate_mandate("analyze")
+
+```
+Result:
+{
+  "valid": true,
+  "mandate": "ANALYZE",
+  "reason": "Mandate is defined in approved vocabulary",
+  "execution_allowed": false
+}
+
