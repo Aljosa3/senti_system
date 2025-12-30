@@ -33,10 +33,24 @@ def run_cli_chat():
         # Phase V.1 — chat → mandate → intent
         advisory_pipeline = process_chat_input(user_input)
 
-        # Phase V.2 — render advisory output
-        rendered = render_advisory_output(
-            advisory_pipeline.get("advisory_policy", {})
-        )
+        # -------------------------------
+        # Phase V.2 — renderer adapter
+        # -------------------------------
+        # IMPORTANT:
+        # Renderer expects a FLAT payload:
+        # {
+        #   "intent": "...",
+        #   "policy": {...}
+        # }
+        # CLI is the boundary layer that adapts internal pipeline structure.
+        renderer_payload = {
+            "intent": advisory_pipeline
+                .get("mandate_intent_binding", {})
+                .get("intent", "UNKNOWN"),
+            "policy": advisory_pipeline.get("advisory_policy", {})
+        }
+
+        rendered = render_advisory_output(renderer_payload)
 
         # Phase V.3 — output channel (CLI)
         output = output_advisory(
@@ -44,7 +58,20 @@ def run_cli_chat():
             channel="CLI"
         )
 
+        # Extract intent detection results (Phase I.2)
+        intent_detection = advisory_pipeline.get("intent_detection", {})
+        detected_intent = intent_detection.get("intent", "UNKNOWN")
+        detection_reason = intent_detection.get("reason", "No reason provided")
+
+        # Extract final binding intent
+        binding_result = advisory_pipeline.get("mandate_intent_binding", {})
+        final_intent = binding_result.get("intent", "NO_BINDING")
+
         print("\n--- Advisory Output ---")
+        print(f"Detected Intent: {detected_intent}")
+        print(f"  Reason: {detection_reason}")
+        print(f"Final Advisory Intent: {final_intent}")
+        print()
         print(output.get("content", {}).get("explanation", "No explanation"))
         print("----------------------\n")
 

@@ -23,25 +23,48 @@ def process_chat_input(user_input: str) -> dict:
     Returns a read-only explanation object.
     """
 
-    # Phase I.2 — intent detection
+    # --------------------------------------------------
+    # Phase I.2 — Intent detection
+    # --------------------------------------------------
     intent_result = detect_intent(user_input)
 
-    # Normalization safeguard (Phase V.1 responsibility)
+    # Normalization safeguard (defensive, Phase V.1 responsibility)
     if isinstance(intent_result, str):
         intent_result = {"intent": intent_result}
 
-    intent = intent_result.get("intent")
+    detected_intent = intent_result.get("intent")
 
-    # Phase II.2 — mandate validation
-    mandate_result = validate_mandate(intent)
+    # --------------------------------------------------
+    # A1.1 — Intent → Mandate adapter (READ-ONLY)
+    # Deterministic, no execution, no escalation
+    # --------------------------------------------------
+    INTENT_TO_MANDATE = {
+        "META": "DESCRIBE",
+        "QUESTION": "EXPLAIN",
+        "REQUEST": "ANALYZE",
+    }
+
+    mandate_candidate = INTENT_TO_MANDATE.get(detected_intent)
+
+    # --------------------------------------------------
+    # Phase II.2 — Mandate validation
+    # --------------------------------------------------
+    mandate_result = validate_mandate(mandate_candidate)
     mandate = mandate_result.get("mandate")
 
-    # Phase II.3 — mandate → intent binding
+    # --------------------------------------------------
+    # Phase II.3 — Mandate → Intent binding
+    # --------------------------------------------------
     binding_result = bind_mandate_to_intent(mandate)
 
-    # Phase II.4 — advisory response policy
+    # --------------------------------------------------
+    # Phase II.4 — Advisory response policy
+    # --------------------------------------------------
     policy = get_advisory_policy(binding_result.get("intent"))
 
+    # --------------------------------------------------
+    # Final read-only advisory payload
+    # --------------------------------------------------
     return {
         "input": user_input,
         "intent_detection": intent_result,
