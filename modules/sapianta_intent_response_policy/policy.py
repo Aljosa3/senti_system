@@ -48,7 +48,7 @@ INTENT_RESPONSE_POLICY = {
     },
 }
 
-def get_response_policy(intent: str) -> dict:
+def get_advisory_policy(intent: str) -> dict:
     """
     Return the advisory response policy for a given intent.
 
