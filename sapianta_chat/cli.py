@@ -1,80 +1,56 @@
+#!/usr/bin/env python3
 """
-Sapianta Chat CLI
+DEPRECATED ENTRYPOINT — DO NOT USE
 
-Minimal command-line interface for controlled conversational input/output.
-No execution capabilities. No agent behavior.
+This file is intentionally deprecated and blocked.
+
+Sapianta Chat MUST be started via the canonical entrypoint:
+
+    python3 run_sapianta_chat.py
+
+Reason:
+- Prevent ambiguous CLI entrypoints
+- Enforce advisory-only governance
+- Guarantee correct intent detection (Phase I.2)
+- Preserve deterministic renderer and mandate pipeline
+
+Status:
+- Deprecated since STABLE v1.0
+- Execution is intentionally blocked
+
+If you reached this file:
+You are using an outdated or incorrect entrypoint.
 """
 
 import sys
-from sapianta_chat.engine import generate_response_id, get_status_response_id
-from sapianta_chat.response_registry import get_response_text
 
 
-WELCOME_MESSAGE = """Sapianta Chat is running in limited mode.
-No actions or executions are enabled."""
+def main():
+    message = """
+❌ DEPRECATED ENTRYPOINT
 
+You attempted to start Sapianta Chat using:
+    sapianta_chat/cli.py
 
-EXIT_COMMANDS = ["exit", "quit", "q"]
+This entrypoint is DEPRECATED and BLOCKED.
 
+✅ Correct way to start Sapianta Chat:
+    python3 run_sapianta_chat.py
 
-def print_welcome():
-    print(WELCOME_MESSAGE)
-    print()
+Why this matters:
+- Prevents ambiguous execution paths
+- Ensures advisory-only behavior
+- Enforces governance and intent contracts
 
+Status:
+- Sapianta Chat CLI is STABLE v1.0
+- This entrypoint is permanently disabled
 
-def print_prompt():
-    print("> ", end="", flush=True)
-
-
-def handle_special_command(user_input):
-    stripped = user_input.strip().lower()
-
-    if stripped in EXIT_COMMANDS:
-        print("Exiting.")
-        return True
-
-    if stripped == "status":
-        response_id = get_status_response_id()
-        print(get_response_text(response_id))
-        return True
-
-    if stripped == "help":
-        print("Available commands:")
-        print("  status - Show capability status")
-        print("  exit, quit, q - Exit the application")
-        return True
-
-    return False
-
-
-def run():
-    print_welcome()
-
-    try:
-        while True:
-            print_prompt()
-
-            try:
-                user_input = input()
-            except EOFError:
-                print()
-                print("EOF detected. Exiting.")
-                break
-
-            if handle_special_command(user_input):
-                if user_input.strip().lower() in EXIT_COMMANDS:
-                    break
-                continue
-
-            response_id = generate_response_id(user_input)
-            print(get_response_text(response_id))
-            print()
-
-    except KeyboardInterrupt:
-        print()
-        print("Interrupted. Exiting.")
-        sys.exit(0)
+Please update your workflow.
+"""
+    print(message.strip())
+    sys.exit(1)
 
 
 if __name__ == "__main__":
-    run()
+    main()
