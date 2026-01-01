@@ -10,9 +10,13 @@ Authority: NONE
 Execution: FORBIDDEN
 """
 
+import json
 from modules.sapianta_chat_mandate_bridge.bridge import process_chat_input
 from modules.sapianta_advisory_renderer.render import render_advisory_output
 from modules.sapianta_output_channel.channel import output_advisory
+# FAZA IV: Chat Inspect wiring
+from modules.sapianta_chat_state_machine.machine import ChatStateMachine
+from modules.sapianta_chat_inspect.inspect import inspect_full
 
 
 def run_cli_chat():
@@ -23,6 +27,9 @@ def run_cli_chat():
     print("Sapianta CLI Chat (read-only)")
     print("Type 'exit' to quit.\n")
 
+    # FAZA IV: Initialize state machine for inspect functionality
+    machine = ChatStateMachine()
+
     while True:
         user_input = input("> ").strip()
 
@@ -30,8 +37,24 @@ def run_cli_chat():
             print("Session closed.")
             break
 
+        # FAZA IV: Route "chat inspect" command (read-only)
+        if user_input.lower() in {"chat inspect", "inspect"}:
+            try:
+                result = inspect_full(machine)
+                print("\n--- Chat State Inspection ---")
+                print(json.dumps(result, indent=2, default=str))
+                print("-----------------------------\n")
+            except Exception as e:
+                print(f"\n[ERROR] Inspect failed: {e}\n")
+            continue
+
         # Phase V.1 — chat → mandate → intent
         advisory_pipeline = process_chat_input(user_input)
+
+        # FAZA V.1: Store mandate from pipeline in ChatStateMachine context (PRE-EBM)
+        mandate = advisory_pipeline.get("mandate")
+        if mandate is not None:
+            machine.context["mandate"] = mandate
 
         # -------------------------------
         # Phase V.2 — renderer adapter
