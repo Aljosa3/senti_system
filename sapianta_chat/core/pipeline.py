@@ -1,0 +1,42 @@
+from sapianta_chat.models.messages import UserMessage
+from sapianta_chat.models.intent import Intent
+
+from sapianta_chat.core.input.input_handler import InputHandler
+from sapianta_chat.core.interpretation.intent_interpreter import IntentInterpreter
+from sapianta_chat.core.clarification.clarification_engine import ClarificationEngine
+from sapianta_chat.core.normative.normative_checker import NormativeChecker
+from sapianta_chat.core.normalization.semantic_normalizer import SemanticNormalizer
+from sapianta_chat.core.intent.intent_builder import IntentBuilder
+from sapianta_chat.core.response.response_composer import ResponseComposer
+from sapianta_chat.boundaries.output_boundary import OutputBoundary
+
+
+class ChatPipeline:
+    """
+    Minimal linear pipeline.
+    No execution. No intelligence. No side effects.
+    """
+
+    def __init__(self):
+        self.input_handler = InputHandler()
+        self.intent_interpreter = IntentInterpreter()
+        self.clarification_engine = ClarificationEngine()
+        self.normative_checker = NormativeChecker()
+        self.semantic_normalizer = SemanticNormalizer()
+        self.intent_builder = IntentBuilder()
+        self.response_composer = ResponseComposer()
+        self.output_boundary = OutputBoundary()
+
+    def process(self, text: str):
+        message = UserMessage(text)
+
+        message = self.input_handler.handle(message)
+        message = self.intent_interpreter.interpret(message)
+        message = self.clarification_engine.clarify(message)
+        message = self.normative_checker.check(message)
+        message = self.semantic_normalizer.normalize(message)
+
+        intent = self.intent_builder.build(message)
+        response = self.response_composer.compose(intent)
+
+        return self.output_boundary.close(response)
