@@ -1,5 +1,4 @@
 from sapianta_chat.models.messages import UserMessage
-from sapianta_chat.models.intent import Intent
 
 from sapianta_chat.core.input.input_handler import InputHandler
 from sapianta_chat.core.interpretation.intent_interpreter import IntentInterpreter
