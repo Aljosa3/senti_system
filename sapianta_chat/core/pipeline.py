@@ -1,4 +1,6 @@
 from sapianta_chat.models.messages import UserMessage
+from sapianta_chat.models.rejections import Rejection
+from sapianta_chat.models.chat_response import ChatResponse
 
 from sapianta_chat.core.input.input_handler import InputHandler
 from sapianta_chat.core.interpretation.intent_interpreter import IntentInterpreter
@@ -29,17 +31,29 @@ class ChatPipeline:
     def process(self, text: str):
         message = UserMessage(text)
 
-        try:
-            message = self.input_handler.handle(message)
-            message = self.intent_interpreter.interpret(message)
-            message = self.clarification_engine.clarify(message)
-            message = self.normative_checker.check(message)
-            message = self.semantic_normalizer.normalize(message)
+        message = self.input_handler.handle(message)
+        if isinstance(message, Rejection):
+            return self.output_boundary.close(ChatResponse(status="rejected", rejection=message))
 
-            result = self.intent_builder.build(message)
+        message = self.intent_interpreter.interpret(message)
+        if isinstance(message, Rejection):
+            return self.output_boundary.close(ChatResponse(status="rejected", rejection=message))
 
-        except Exception as e:
-            result = e
+        message = self.clarification_engine.clarify(message)
+        if isinstance(message, Rejection):
+            return self.output_boundary.close(ChatResponse(status="rejected", rejection=message))
+
+        message = self.normative_checker.check(message)
+        if isinstance(message, Rejection):
+            return self.output_boundary.close(ChatResponse(status="rejected", rejection=message))
+
+        message = self.semantic_normalizer.normalize(message)
+        if isinstance(message, Rejection):
+            return self.output_boundary.close(ChatResponse(status="rejected", rejection=message))
+
+        result = self.intent_builder.build(message)
+        if isinstance(result, Rejection):
+            return self.output_boundary.close(ChatResponse(status="rejected", rejection=result))
 
         response = self.response_composer.compose(result)
         return self.output_boundary.close(response)
