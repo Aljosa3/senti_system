@@ -30,13 +30,17 @@ class ChatPipeline:
     def process(self, text: str):
         message = UserMessage(text)
 
-        message = self.input_handler.handle(message)
-        message = self.intent_interpreter.interpret(message)
-        message = self.clarification_engine.clarify(message)
-        message = self.normative_checker.check(message)
-        message = self.semantic_normalizer.normalize(message)
+        try:
+            message = self.input_handler.handle(message)
+            message = self.intent_interpreter.interpret(message)
+            message = self.clarification_engine.clarify(message)
+            message = self.normative_checker.check(message)
+            message = self.semantic_normalizer.normalize(message)
 
-        intent = self.intent_builder.build(message)
-        response = self.response_composer.compose(intent)
+            result = self.intent_builder.build(message)
 
+        except Exception as e:
+            result = e
+
+        response = self.response_composer.compose(result)
         return self.output_boundary.close(response)
