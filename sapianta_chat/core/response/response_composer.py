@@ -1,19 +1,22 @@
 from sapianta_chat.models.chat_response import ChatResponse
+from sapianta_chat.models.rejections import NormativeRejection
 from sapianta_chat.exceptions.normative_violation import NormativeViolation
 
 
 class ResponseComposer:
     """
-    Composes a standardized ChatResponse.
-    Converts normative violations into declarative rejections.
+    Composes a standardized ChatResponse with typed rejections.
     """
 
     def compose(self, result):
         if isinstance(result, NormativeViolation):
-            return ChatResponse(
-                status="rejected",
+            rejection = NormativeRejection(
                 reason=result.reason,
                 detail=result.detail,
+            )
+            return ChatResponse(
+                status="rejected",
+                rejection=rejection,
             )
 
         return ChatResponse(
